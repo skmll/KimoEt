@@ -31,7 +31,6 @@ namespace KimoEt
     {
         //public static TextBox toDebug;
         private bool isPaused = true;
-        //private string pickNumberString;
         private int draftPickNumber = -1;
         private bool isDoubleDigitsPickNumber = false;
         private bool isWindowSetup = false;
