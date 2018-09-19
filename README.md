@@ -12,6 +12,7 @@ This was done out of a personal frustration I had with needing to ALT+TAB for th
 
 To use it download latest version from releases tab:
 https://github.com/skmll/KimoEt/releases
+
 Or use this link: (might not be updated for future releases)
 https://github.com/skmll/KimoEt/releases/download/v1.0/KimoEt_v1.0.zip
 
