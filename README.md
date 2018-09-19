@@ -41,5 +41,7 @@ I am also open to ideas and features you guys would like me to add on future rel
 If you find any bugs, please open an issue or contact me.
 
 Contact me:
+
 Eternal discord -> zkeme
+
 In game name -> sKeeme+0851
