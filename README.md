@@ -32,6 +32,7 @@ FEATURES:
 - Auto hides when putting Eternal on Background (works most of the time, I haven't had time to address this yet. If it doesnt work the first time, do some more alt tabs :P)
 - Auto moves the overlay window when Eternal window moves
 - Auto brings Eternal window to front when hitting the "play" button
+- All app windows are draggable, so you can move them around
 
 KNOWN LIMITATIONS:
 - Only works for Windows
