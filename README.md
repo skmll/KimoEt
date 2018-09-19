@@ -16,6 +16,10 @@ https://github.com/skmll/KimoEt/releases
 Or use this link: (might not be updated for future releases)
 https://github.com/skmll/KimoEt/releases/download/v1.0/KimoEt_v1.0.zip
 
+After that, uncompress it, and open KimoEt folder. Then just double click on KimoEt.exe to star the program.
+It should be pretty easy after that. Go into a draft, and click the "play" button. You should see something like this:
+![alt text](https://i.imgur.com/5nAm9FA.jpg)
+
 FEATURES:
 - See the ratings (0-5) for each card in the current draft screen
 - Colors for each rating range (Default goes from red to yellow to green, to a cyanish to white color for 4+ rated cards)
@@ -27,6 +31,7 @@ FEATURES:
 - Play/Pause
 - Auto hides when putting Eternal on Background (works most of the time, I haven't had time to address this yet. If it doesnt work the first time, do some more alt tabs :P)
 - Auto moves the overlay window when Eternal window moves
+- Auto brings Eternal window to front when hitting the "play" button
 
 KNOWN LIMITATIONS:
 - Only works for Windows
