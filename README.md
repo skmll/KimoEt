@@ -10,6 +10,11 @@ https://docs.google.com/spreadsheets/d/1NH1i_nfPKhXO53uKYgJYICrTx_XSqDC88b2I3e0v
 
 This was done out of a personal frustration I had with needing to ALT+TAB for the spreadsheet, CTRL+F for searching, writting the name, looking for the highlighted card.
 
+To use it download latest version from releases tab:
+https://github.com/skmll/KimoEt/releases
+Or use this link: (might not be updated for future releases)
+https://github.com/skmll/KimoEt/releases/download/v1.0/KimoEt_v1.0.zip
+
 FEATURES:
 - See the ratings (0-5) for each card in the current draft screen
 - Colors for each rating range (Default goes from red to yellow to green, to a cyanish to white color for 4+ rated cards)
