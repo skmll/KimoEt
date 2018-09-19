@@ -52,6 +52,8 @@ I would appreciate and encourage if someone from c# wpf world would do some pull
 I am also open to ideas and features you guys would like me to add on future releases.
 If you find any bugs, please open an issue or contact me.
 
+Big thanks to the TDC team for providing me and all of us with the great tool that is the spreadsheet. It enabled me to do this, and all of us to have an idea of the cards' power when we dont have much time to play with everything.
+
 Contact me:
 
 Eternal discord -> zkeme
