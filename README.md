@@ -10,7 +10,7 @@ https://docs.google.com/spreadsheets/d/1NH1i_nfPKhXO53uKYgJYICrTx_XSqDC88b2I3e0v
 
 This was done out of a personal frustration I had with needing to ALT+TAB for the spreadsheet, CTRL+F for searching, writting the name, looking for the highlighted card.
 
-To use it download latest version from releases tab:
+To use it, download latest version from releases tab:
 https://github.com/skmll/KimoEt/releases
 
 Or use this link: (might not be updated for future releases)
