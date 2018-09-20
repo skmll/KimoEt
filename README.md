@@ -20,7 +20,7 @@ After that, uncompress it, and open KimoEt folder. Then just double click on Kim
 It should be pretty easy after that. Go into a draft, and click the "play" button. You should see something like this:
 ![alt text](https://i.imgur.com/5nAm9FA.jpg)
 
-FEATURES:
+**FEATURES:**
 - See the ratings (0-5) for each card in the current draft screen
 - Colors for each rating range (Default goes from red to yellow to green, to a cyanish to white color for 4+ rated cards)
 - Click on the name of a card, to see individual ratings and comments the reviewers might have added
@@ -34,13 +34,14 @@ FEATURES:
 - Auto brings Eternal window to front when hitting the "play" button
 - All app windows are draggable, so you can move them around
 
-KNOWN LIMITATIONS:
+**KNOWN LIMITATIONS:**
 - Only works for Windows
 - Only works in 1920x1080 resolution (Eternal game setting)
 - Only works in Windowed Mode (Eternal game setting)
 - Sometimes the auto hiding when Eternal is not in the foreground, might not work
+- Does not work if you have a custom scale set in the windows' display settings
 
-DISCLAIMER:
+**DISCLAIMER:**
 
 I did this tool on my free time, only tested on my own personal computer. As such, I cannot promise this will work on your computer nor am I responsible in any way for anything that happens to your PC after using the tool.
 I am a software developer, but I had no previous experience with any tool I used in this app (Tesseract, JSONConverter) and I don't fully understand how they operate.
@@ -54,7 +55,7 @@ If you find any bugs, please open an issue or contact me.
 
 Big thanks to the TDC team for providing me and all of us with the great tool that is the spreadsheet. It enabled me to do this, and all of us to have an idea of the cards' power when we dont have much time to play with everything.
 
-Contact me:
+**Contact me:**
 
 Eternal discord -> zkeme
 
