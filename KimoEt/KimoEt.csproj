@@ -190,5 +190,11 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\KimoEtUpdater\KimoEtUpdater.csproj">
+      <Project>{3faa89f5-6b1f-48e1-8208-df7bdeb5578c}</Project>
+      <Name>KimoEtUpdater</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

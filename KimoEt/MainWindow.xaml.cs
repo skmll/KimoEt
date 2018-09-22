@@ -4,8 +4,10 @@ using KimoEt.ReviewDatabase;
 using KimoEt.Utililties;
 using KimoEt.VisualRecognition;
 using KimoEt.VisualRecognition.Cards;
+using KimoEtUpdater;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -41,6 +43,7 @@ namespace KimoEt
         {
             Settings.LoadSettingsFromDisk();
             InitializeComponent();
+            KimoEtTitle.Text = "KimoEt - v" + Updater.VERSION.ToString(CultureInfo.InvariantCulture);
             FontFamily = new FontFamily("Segoe UI");
 
             Utils.MakePanelDraggable(CanvasBorder, HolderCanvas, this, this);
@@ -49,6 +52,15 @@ namespace KimoEt
 
             //toDebug = FindName("DraftPickNumber") as TextBox;
             ComboboxColorMode.SelectedIndex = Settings.Instance.RatingColorMode;
+            CheckForUpdates();
+        }
+
+        private static void CheckForUpdates()
+        {
+            Task.Run(() =>
+            {
+                Updater.Update(Process.GetCurrentProcess().Id);
+            });
         }
 
         private void MakeUnmakeColorsRuler(bool updateOnly)

@@ -40,7 +40,7 @@
     <Canvas Name="HolderCanvas">
         <Border x:Name="CanvasBorder" BorderBrush="Gray" Background="Gray" BorderThickness="1" Canvas.Left="1300" Canvas.Top="115" Height="55" Width="170">
             <Canvas Name="MenuCanvas">
-                <TextBlock Text="KimoEt" Width="168" TextAlignment="Center" FontFamily="Verdana" FontSize="12" Background="DarkCyan" Foreground="White"/>
+                <TextBlock Name="KimoEtTitle" Text="KimoEt" Width="168" TextAlignment="Center" FontFamily="Verdana" FontSize="12" Background="DarkCyan" Foreground="White"/>
                 <Button Name="PausePlayBtn" Height="30" Click="PausePlayButtonClick" Background="Gray" Canvas.Top="20" Canvas.Left="10">
                     <Image Source="Images/resume_icon.png"/>
                 </Button>
