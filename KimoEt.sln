@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.28010.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KimoEt", "KimoEt\KimoEt.csproj", "{B4D05DF8-143E-4E25-A21D-1CBCD960A551}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KimoEtUpdater", "KimoEtUpdater\KimoEtUpdater.csproj", "{3FAA89F5-6B1F-48E1-8208-DF7BDEB5578C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{B4D05DF8-143E-4E25-A21D-1CBCD960A551}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B4D05DF8-143E-4E25-A21D-1CBCD960A551}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B4D05DF8-143E-4E25-A21D-1CBCD960A551}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3FAA89F5-6B1F-48E1-8208-DF7BDEB5578C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3FAA89F5-6B1F-48E1-8208-DF7BDEB5578C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3FAA89F5-6B1F-48E1-8208-DF7BDEB5578C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3FAA89F5-6B1F-48E1-8208-DF7BDEB5578C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

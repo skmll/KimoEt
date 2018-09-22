@@ -10,9 +10,11 @@ using System.Windows;
 
 namespace KimoEt
 {
-    class Settings
+    public class Settings
     {
         public static Settings Instance;
+
+        public static readonly decimal VERSION = 1.0m;
 
         public static readonly int RATING_COLOR_NONE = 0;
         public static readonly int RATING_COLOR_DEFAULT = 1;
