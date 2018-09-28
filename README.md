@@ -5,7 +5,7 @@ Tool for the Eternal Card Game's Draft Mode that lets you have an overlay over t
 This is especially helpful for beginners.
 If you are goint to use it, beware that the ratings are only a representation of a card's power in the void. You should adjust your picks according to what you have already picked. This is more and more important as you go through your picks.
 
-The source of the ratings is this document made by TDC's Eternal team (please correct me if I am wrong):
+The source of the ratings is this document made by TDC's Eternal team:
 https://docs.google.com/spreadsheets/d/1NH1i_nfPKhXO53uKYgJYICrTx_XSqDC88b2I3e0vsc0
 
 This was done out of a personal frustration I had with needing to ALT+TAB for the spreadsheet, CTRL+F for searching, writting the name, looking for the highlighted card.
@@ -44,11 +44,10 @@ It should be pretty easy after that. Go into a draft, and click the "play" butto
 **DISCLAIMER:**
 
 I did this tool on my free time, only tested on my own personal computer. As such, I cannot promise this will work on your computer nor am I responsible in any way for anything that happens to your PC after using the tool.
-I am a software developer, but I had no previous experience with any tool I used in this app (Tesseract, JSONConverter) and I don't fully understand how they operate.
-It is possible that I could have also implemented something that I am not fully aware of how it works.
+I am a software developer, but I had no previous experience with any tool I used in this app (Tesseract, JSONConverter).
 I personaly have been using it almost every day. I love it and I dont have any issue with it.
 
-I am not proud of the code quality, since I focused on speed of development, giving the little time I had to do it daily.
+I am not especially proud of the code quality, since I focused on speed of development, giving the little time I had to do it daily.
 I would appreciate and encourage if someone from c# wpf world would do some pull requests to help me improve that.
 I am also open to ideas and features you guys would like me to add on future releases.
 If you find any bugs, please open an issue or contact me.
