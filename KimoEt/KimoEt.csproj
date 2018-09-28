@@ -86,7 +86,10 @@
     <Compile Include="ProcessWindow\ProcessWindowManager.cs" />
     <Compile Include="ProcessWindow\RECT.cs" />
     <Compile Include="ReviewDatabase\ReviewDataSource.cs" />
+    <Compile Include="ReviewDatabase\TierListDownloader.cs" />
     <Compile Include="Settings.cs" />
+    <Compile Include="UI\DialogWindowManager.cs" />
+    <Compile Include="Decorator\DpiDecorator.cs" />
     <Compile Include="Utils\DraggableHelper.cs" />
     <Compile Include="Utils\Utils.cs" />
     <Compile Include="VisualRecognition\Cards\CardGuess.cs" />
@@ -135,6 +138,9 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Images\help_icon.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Images\KimoEt.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -165,6 +171,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="KimoEt.ico" />
+    <Content Include="Images\warning_icon.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="x64\liblept172.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

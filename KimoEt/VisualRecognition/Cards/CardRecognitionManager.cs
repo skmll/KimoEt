@@ -99,7 +99,7 @@ namespace KimoEt.VisualRecognition
             }
             finally
             {
-                File.Delete(scaledTempFile);
+                //File.Delete(scaledTempFile);
                 //watch.Stop();
                 //var elapsedMs = watch.ElapsedMilliseconds;
                 //Console.WriteLine($"____________________ {elapsedMs}ms ________________________");

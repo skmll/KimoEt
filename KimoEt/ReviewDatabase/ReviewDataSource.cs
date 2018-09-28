@@ -26,8 +26,6 @@ namespace KimoEt.ReviewDatabase
 
         public Dictionary<CardName, CardReview> cardReviewsByName = new Dictionary<CardName, CardReview>();
 
-        //public List<CardReview> cardReviews = new List<CardReview>();
-
         public class CardName
         {
             string name;
@@ -73,7 +71,7 @@ namespace KimoEt.ReviewDatabase
         private void LoadCardReviews()
         {
             //Card,Pack,Flash,Drifter,Mgallop,Isomorphic,Average,Flash,Drifter,Mgallop,Isomorphic
-            foreach (var line in File.ReadAllLines(@"tierLists/tierList.csv").Skip(1).Skip(1))
+            foreach (var line in File.ReadAllLines(@"tierLists/TDC.csv").Skip(1).Skip(1))
             {
                 var review = new CardReview();
                 var columns = line.Split(',');
@@ -146,14 +144,6 @@ namespace KimoEt.ReviewDatabase
                     deltaIndex += (numberOfIndexJumps - 1);
                     i += numberOfIndexJumps;
                 }
-                //var cardName = columns[0];
-                //if (cardName.StartsWith("\""))
-                //{
-                //    cardName += "," + columns[1];
-                //    cardName = cardName.Replace("\"", "");
-                //}
-                //cardReviews.Add(cardName);
-                //cardReviews.Add(review);
                 cardReviewsByName[new CardName(review.Name)] = review;
             }
         }

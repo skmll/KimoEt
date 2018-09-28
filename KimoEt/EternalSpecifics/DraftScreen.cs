@@ -11,7 +11,7 @@ namespace KimoEt.EternalSpecifics
     static class DraftScreen
     {
         private static readonly int FIRST_CARD_RELATIVE_X = 400;
-        private static readonly int FIRST_CARD_RELATIVE_Y = 280;
+        private static readonly int FIRST_CARD_RELATIVE_Y = 281 - 39;
 
         private static readonly int CARD_NAME_WIDTH = 161;
         private static readonly int CARD_NAME_HEIGHT = 14;
@@ -91,16 +91,31 @@ namespace KimoEt.EternalSpecifics
             int relativeXRight = relativeXLeft + CARD_NAME_WIDTH;
             int relativeYBottom = relativeYTop + CARD_NAME_HEIGHT;
 
-            return new RECT(relativeXLeft, relativeYTop, relativeXRight, relativeYBottom);
+            return new RECT(
+                relativeXLeft,
+                relativeYTop,
+                relativeXRight,
+                relativeYBottom
+                );
         }
         
         public static RECT GetRectForPickNumber(bool isDoubleDigits = false)
         {
             if (!isDoubleDigits)
             {
-                return new RECT(1076, 1040, 1250, 1070);
+                return new RECT(
+                    1076,
+                    1040 - 39, 
+                    1250,
+                    1070 - 39
+                    );
             }
-            return new RECT(1060, 1040, 1250, 1070);
+            return new RECT(
+                1060,
+                1040 - 39, 
+                1250,
+                1070 - 39
+                );
         }
 
         public static string GetExceptionPickNumber(string readPickNumber)

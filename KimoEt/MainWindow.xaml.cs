@@ -1,6 +1,7 @@
 ﻿using KimoEt.EternalSpecifics;
 using KimoEt.ProcessWindow;
 using KimoEt.ReviewDatabase;
+using KimoEt.UI;
 using KimoEt.Utililties;
 using KimoEt.VisualRecognition;
 using KimoEt.VisualRecognition.Cards;
@@ -31,28 +32,47 @@ namespace KimoEt
     /// </summary>
     public partial class MainWindow : Window, DraggableHelper.IOnDragEnded
     {
-        //public static TextBox toDebug;
         private bool isPaused = true;
         private int draftPickNumber = -1;
         private bool isDoubleDigitsPickNumber = false;
         private bool isWindowSetup = false;
         private Dictionary<CardNameLocation, List<CardGuess>> currentCardGuessesByLocation = new Dictionary<CardNameLocation, List<CardGuess>>();
-        private SolidColorBrush backgroundBrush = new SolidColorBrush(Utils.ConvertStringToColor("#1E1E1E")) { Opacity = 0.7f };
+        public static SolidColorBrush backgroundBrush = new SolidColorBrush(Utils.ConvertStringToColor("#1E1E1E")) { Opacity = 0.7f };
+        public static string VERSION_STRING = Updater.VERSION.ToString(CultureInfo.InvariantCulture);
+
+        public static double ScaleFactorX;
+        public static double ScaleFactorY;
 
         public MainWindow()
         {
-            Settings.LoadSettingsFromDisk();
             InitializeComponent();
-            KimoEtTitle.Text = "KimoEt - v" + Updater.VERSION.ToString(CultureInfo.InvariantCulture);
+
+            ProcessWindowManager.Instance.BindLocationToThisWindow(this);
+            Settings.LoadSettingsFromDisk();
+            TierListDownloader.DownloadTDCs();
+
+            if (Settings.Instance.LastVersionUsed < Updater.VERSION)
+            {
+                DialogWindowManager.ShowInitialWarning(HolderCanvas);
+                Settings.Instance.SetNewLastVersionUsed(Updater.VERSION);
+            }
+
+            KimoEtTitle.Text = "KimoEt - v" + VERSION_STRING;
             FontFamily = new FontFamily("Segoe UI");
 
             Utils.MakePanelDraggable(CanvasBorder, HolderCanvas, this, this);
             Canvas.SetLeft(CanvasBorder, Settings.Instance.MenuPoint.X);
             Canvas.SetTop(CanvasBorder, Settings.Instance.MenuPoint.Y);
 
-            //toDebug = FindName("DraftPickNumber") as TextBox;
             ComboboxColorMode.SelectedIndex = Settings.Instance.RatingColorMode;
             CheckForUpdates();
+
+            this.Loaded += (s, e) =>
+            {
+                Matrix m = PresentationSource.FromVisual(this).CompositionTarget.TransformToDevice;
+                ScaleFactorX = m.M11;
+                ScaleFactorY = m.M22;
+            };
         }
 
         private static void CheckForUpdates()
@@ -98,7 +118,7 @@ namespace KimoEt
                 TextBlock colorTest = new TextBlock()
                 {
                     Name = "colorTestI" + i,
-                    Text = "Rating:\t" + rating, //+ ",  " + color.R + "," + color.G + "," + color.B,
+                    Text = "Rating:\t" + rating,
                     Width = 80,
                     Height = 20,
                     Foreground = Brushes.Black,
@@ -161,7 +181,6 @@ namespace KimoEt
 
         public void OnDragEnded(UIElement element)
         {
-            // example 1
             double top = Canvas.GetTop(element);
             double left = Canvas.GetLeft(element);
 
@@ -232,6 +251,12 @@ namespace KimoEt
         {
             if (isPaused) return;
 
+            foreach (var location in DraftScreen.GetAllCardNameLocations())
+            {
+                var myTextBox = (Button)this.FindName(GetBestGuessLabelName(location));
+                myTextBox.Visibility = Visibility.Hidden;
+            }
+
             var rotateImage = (Image)RefreshBtn.Content;
             rotateImage.RenderTransform = new RotateTransform();
             rotateImage.RenderTransformOrigin = new Point(0.5, 0.5);
@@ -298,7 +323,7 @@ namespace KimoEt
                 while (!isPaused)
                 {
                     bool isWindowNormal = ProcessWindowManager.Instance.IsWindowStateNormal();
-                    if (isWindowNormal)
+                    if (isWindowNormal && TierListDownloader.isTDCsReady)
                     {
                         var pickNumber = CardRecognitionManager.Instance.ReadPickNumber(ProcessWindowManager.Instance.GetWindowAreaBitmap(DraftScreen.GetRectForPickNumber(isDoubleDigitsPickNumber), false));
                         if (pickNumber == null || !pickNumber.StartsWith("Card"))
@@ -314,9 +339,11 @@ namespace KimoEt
                             Application.Current.Dispatcher.BeginInvoke(
                             DispatcherPriority.Normal,
                             (Action)(() => OnNewPickNumber(pickNumber, txtNumber)));
-                            Thread.Sleep(1000);
+
                         } catch { /*do nothing*/}
                     }
+
+                    Thread.Sleep(1000);
                 }
             });
         }
@@ -347,15 +374,6 @@ namespace KimoEt
 
                 txtNumber.Text = textRead;
 
-                foreach (var location in DraftScreen.GetCardNameLocationsNotAvailable(draftPickNumber))
-                {
-                    var name = GetBestGuessLabelName(location);
-                    var myTextBox = (Button)this.FindName(name);
-                    myTextBox.Visibility = Visibility.Hidden;
-
-                    var searchButton = (Button)this.FindName(GetSearchButtonName(location));
-                    searchButton.Visibility = Visibility.Hidden;
-                }
                 GetAllCardReviews();
             }
         }
@@ -382,288 +400,8 @@ namespace KimoEt
             MainCanvas.Children.Add(bestGuessLabel);
             MainCanvas.RegisterName(bestGuessLabel.Name, bestGuessLabel);
             bestGuessLabel.PreviewMouseDown += OnMainLabelClick;
-
-            var brush = new ImageBrush();
-            brush.ImageSource = new BitmapImage(new Uri("Images/search_icon.png", UriKind.Relative));
-
-            Canvas searchCorrectCardBtnCanvas = new Canvas()
-            {
-                Width = 20,
-                Height = 20,
-                Background = new SolidColorBrush(Colors.Black) { Opacity = 0.01f }
-            };
-
-            Canvas.SetLeft(searchCorrectCardBtnCanvas, location.Rect.Left - 30);
-            Canvas.SetTop(searchCorrectCardBtnCanvas, location.Rect.Top - 190);
-            MainCanvas.Children.Add(searchCorrectCardBtnCanvas);
-            searchCorrectCardBtnCanvas.MouseEnter += (s, args) =>
-            {
-                var btn = searchCorrectCardBtnCanvas.Children[0] as Button;
-                btn.Opacity = 1;
-            };
-            searchCorrectCardBtnCanvas.MouseLeave += (s, args) =>
-            {
-                var btn = searchCorrectCardBtnCanvas.Children[0] as Button;
-                btn.Opacity = 0.2f;
-            };
-
-            Button searchCorrectCardBtn = new Button
-            {
-                Name = GetSearchButtonName(location),
-                Style = (Style)Resources["MyButtonStyle"],
-                Background = brush,
-                Width = 20,
-                Height = 20,
-                Visibility = Visibility.Hidden,
-                BorderThickness = new Thickness(0),
-            };
-            searchCorrectCardBtn.Click += OnSearchButtonClick;
-            searchCorrectCardBtn.Opacity = 0.2f;
-
-            searchCorrectCardBtnCanvas.Children.Add(searchCorrectCardBtn);
-            searchCorrectCardBtnCanvas.RegisterName(searchCorrectCardBtn.Name, searchCorrectCardBtn);
         }
-
-        private void OnSearchButtonClick(object sender, RoutedEventArgs e)
-        {
-            ProcessWindowManager.Instance.ReleaseFocus();
-            string name = ((Button)sender).Name;
-            CardNameLocation location = GetLocationFromSearchButtonName(name);
-            List<CardGuess> guesses = currentCardGuessesByLocation[location];
-
-            StackPanel panel = this.FindName("panel" + location.ToString() + "otherGuesses") as StackPanel;
-            Canvas searchCanvas = this.FindName("searchCanvas" + location.ToString()) as Canvas;
-            if (panel == null)
-            {
-                if (searchCanvas == null)
-                {
-                    searchCanvas = new Canvas
-                    {
-                        Name = "searchCanvas" + location.ToString(),
-                        Width = 210,
-                        Height = 300,
-                        Background = new SolidColorBrush(Colors.Transparent) { Opacity = 0.3f },
-                    };
-                    Canvas.SetLeft(searchCanvas, location.Rect.Left - 30);
-                    Canvas.SetTop(searchCanvas, location.Rect.Top - 175);
-                    MainCanvas.Children.Add(searchCanvas);
-                    MainCanvas.RegisterName(searchCanvas.Name, searchCanvas);
-                }
-
-                panel = new StackPanel
-                {
-                    Orientation = Orientation.Vertical,
-                    Name = "panel" + location.ToString() + "otherGuesses"
-                };
-                Canvas.SetLeft(panel, 5);//location.Rect.Left - 30);
-                Canvas.SetTop(panel, 5);// location.Rect.Top - 170);
-                searchCanvas.Children.Add(panel);
-                searchCanvas.RegisterName(panel.Name, panel);
-
-                StackPanel searchPanel = new StackPanel
-                {
-                    Orientation = Orientation.Horizontal,
-                    Background = backgroundBrush,
-                };
-                panel.Children.Add(searchPanel);
-
-                TextBox editTextSearch = new TextBox
-                {
-                    Width = 180,
-                    Height = 20,
-                    HorizontalAlignment = HorizontalAlignment.Left,
-                    Background = backgroundBrush,
-                    Foreground = Brushes.Gray,
-                    Text = "Search",
-                    BorderThickness = new Thickness(0),
-                    Name = "editText" + location.ToString() + "guess_search",
-                };
-                editTextSearch.GotKeyboardFocus += new KeyboardFocusChangedEventHandler(tb_GotKeyboardFocus);
-                editTextSearch.LostKeyboardFocus += new KeyboardFocusChangedEventHandler(tb_LostKeyboardFocus);
-                editTextSearch.PreviewKeyDown += (s, eventArgs) =>
-                {
-                    if (eventArgs.Key == Key.Return)
-                    {
-                        SearchCardByName(location, editTextSearch);
-                        eventArgs.Handled = true;
-                    }
-                };
-                searchPanel.Children.Add(editTextSearch);
-                searchPanel.RegisterName(editTextSearch.Name, editTextSearch);
-                editTextSearch.Focus();
-                ProcessWindowManager.Instance.ForceFocus();
-
-                searchCanvas.MouseLeave += OnMouseLeaveSearchCanvasEvent;
-                ((Button)sender).MouseLeave += OnMouseLeaveSearchCanvasEvent;
-                ((Button)FindName(GetBestGuessLabelName(location))).MouseLeave += OnMouseLeaveSearchCanvasEvent;
-
-                var brush = new ImageBrush();
-                brush.ImageSource = new BitmapImage(new Uri("Images/search_icon.png", UriKind.Relative));
-
-                Button searchCorrectCardBtn = new Button
-                {
-                    Name = "button" + location.ToString() + "search_with_name",
-                    Width = 20,
-                    Height = 20,
-                    Background = brush,
-                    BorderThickness = new Thickness(0),
-                };
-                searchCorrectCardBtn.Click += delegate {
-                    SearchCardByName(location, editTextSearch);
-                };
-                searchPanel.Children.Add(searchCorrectCardBtn);
-                searchPanel.RegisterName(searchCorrectCardBtn.Name, searchCorrectCardBtn);
-
-                if (guesses.Count > 1)
-                {
-                    Border separator = new Border()
-                    {
-                        Background = new SolidColorBrush(Colors.White),
-                        BorderBrush = new SolidColorBrush(Colors.White),
-                        Height = 1f,
-                        BorderThickness = new Thickness(0.5)
-                    };
-                    panel.Children.Add(separator);
-                }
-
-                for (int i = 0; i < guesses.Count; i++)
-                {
-                    if (i == guesses.Count - 1) continue;
-                    CardGuess guess = guesses[i];
-
-                    TextBox guessLabel = this.FindName("textbox" + location.ToString() + "guess" + i) as TextBox;
-                    if (guessLabel == null)
-                    {
-                        guessLabel = new TextBox
-                        {
-                            Width = 200,
-                            Height = 20,
-                            HorizontalAlignment = HorizontalAlignment.Left,
-                            TextWrapping = TextWrapping.Wrap,
-                            Background = backgroundBrush,
-                            Foreground = new SolidColorBrush(Colors.White),
-                            CaretBrush = new SolidColorBrush(Colors.Transparent),
-                            BorderThickness = new Thickness(0),
-                            Name = "textbox" + location.ToString() + "guess" + i,
-                        };
-                        guessLabel.PreviewMouseDown += OnGuessLabelClick;
-
-                    }
-                    panel.Children.Add(guessLabel);
-                    panel.RegisterName(guessLabel.Name, guessLabel);
-                    guessLabel.Text = guess.Review.ToString();
-                }
-
-            }
-            else
-            {
-                searchCanvas.MouseLeave -= OnMouseLeaveSearchCanvasEvent;
-                ((Button)sender).MouseLeave -= OnMouseLeaveSearchCanvasEvent;
-                ((Button)FindName(GetBestGuessLabelName(location))).MouseLeave -= OnMouseLeaveSearchCanvasEvent;
-
-                foreach (var child in panel.Children)
-                {
-                    if (child is StackPanel)
-                    {
-                        foreach (var childDeep in ((StackPanel)child).Children)
-                        {
-                            if (string.IsNullOrEmpty(((FrameworkElement)childDeep).Name))
-                                continue;
-                            ((StackPanel)child).UnregisterName(((FrameworkElement)childDeep).Name);
-                        }
-                        continue;
-                    }
-                    else
-                    {
-                        if (string.IsNullOrEmpty(((FrameworkElement)child).Name))
-                            continue;
-                    }
-                    panel.UnregisterName(((FrameworkElement)child).Name);
-                }
-                panel.Children.Clear();
-
-                MainCanvas.UnregisterName(searchCanvas.Name);
-                MainCanvas.Children.Remove(searchCanvas);
-
-                MainCanvas.Children.Remove(panel);
-                MainCanvas.UnregisterName(panel.Name);
-            }
-        }
-
-        private void OnMouseLeaveSearchCanvasEvent(object sender, MouseEventArgs e)
-        {
-            CardNameLocation location;
-            if (sender is Button)
-            {
-                var btn = sender as Button;
-                if (btn.Name.StartsWith("label"))
-                {
-                    location = GetLocationFromBestGuessLabelName(btn.Name);
-                }
-                else
-                {
-                    location = GetLocationFromSearchButtonName(btn.Name);
-                }
-            }
-            else
-            {
-                location = GetLocationFromSearchCanvasName(((Canvas)sender).Name);
-            }
-            Canvas searchCanvas = (Canvas)FindName("searchCanvas" + location.ToString());
-            Button searchButton = (Button)FindName(GetSearchButtonName(location));
-            Button mainLabel = (Button)FindName(GetBestGuessLabelName(location));
-
-            if (!searchCanvas.IsMouseOver
-                && !searchButton.IsMouseOver
-                && !mainLabel.IsMouseOver
-                && searchCanvas != null)
-            {
-                OnSearchButtonClick(searchButton, null);
-            }
-        }
-
-        private void SearchCardByName(CardNameLocation location, TextBox editTextSearch)
-        {
-            string searchedCardName = editTextSearch.Text;
-            ReviewDataSource.Instance.cardReviewsByName.TryGetValue(new CardName(searchedCardName), out CardReview reviewFromTextWritten);
-            if (reviewFromTextWritten == null)
-                return;
-
-            var newGuess = new CardGuess
-            {
-                Review = reviewFromTextWritten,
-                Certainty = CardGuess.UNCLEAR_CERTAINTY
-            };
-
-            OnGuessSelected(location, currentCardGuessesByLocation[location], newGuess);
-        }
-
-        private void OnGuessLabelClick(object sender, MouseButtonEventArgs e)
-        {
-            TextBox textBox = ((TextBox)sender);
-            string name = textBox.Name;
-            string indexString = name.Split(new[] { "guess" }, StringSplitOptions.None).Last();
-            int guessIndex = Int32.Parse(indexString);
-            name = name.Remove(name.Length - indexString.Length);
-
-            CardNameLocation location = GetLocationFromSecondaryLabelName(name);
-            List<CardGuess> guesses = currentCardGuessesByLocation[location];
-            CardGuess guessSelected = guesses[guessIndex];
-
-            OnGuessSelected(location, guesses, guessSelected);
-        }
-
-        private void OnGuessSelected(CardNameLocation location, List<CardGuess> guesses, CardGuess guessSelected)
-        {
-            guesses.Remove(guessSelected);
-            guesses.Add(guessSelected);
-
-            var searchButton = ((Button)this.FindName(GetSearchButtonName(location)));
-            OnSearchButtonClick(searchButton, null);
-
-            var mainGuessLabel = ((Button)this.FindName(GetBestGuessLabelName(location)));
-            UpdateCardReview(location, guesses);
-        }
+    
 
         private void UpdateCardReview(CardNameLocation location, List<CardGuess> cardGuesses)
         {
@@ -684,13 +422,9 @@ namespace KimoEt
             var myTextBox = (Button)this.FindName(name);
             myTextBox.Visibility = Visibility.Visible;
 
-            var commentsButton = (Button)this.FindName(GetSearchButtonName(location));
-            commentsButton.Visibility = Visibility.Visible;
-
             float rating = float.Parse(cardGuesses.Last().Review.AverageRating, CultureInfo.InvariantCulture.NumberFormat);
             myTextBox.Background = backgroundBrush;
             myTextBox.Foreground = new SolidColorBrush(Utils.GetMediaColorFromDrawingColor(Utils.GetColorForRating((decimal)rating)));
-
 
             myTextBox.Content = cardGuesses.Last().Review.ToString() + (cardGuesses.Count > 1 ? "*" : "");
             Utils.UpdateFontSizeToFit(myTextBox);
@@ -782,21 +516,6 @@ namespace KimoEt
             }
         }
 
-
-        private void tb_LostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
-        {
-            //Make sure sender is the correct Control.
-            if (sender is TextBox)
-            {
-                //If nothing was entered, reset default text.
-                if (((TextBox)sender).Text.Trim().Equals(""))
-                {
-                    ((TextBox)sender).Foreground = Brushes.Gray;
-                    ((TextBox)sender).Text = "Search";
-                }
-            }
-        }
-
         private static string GetCommentsText(CardGuess guess)
         {
             var commentsText = "";
@@ -836,15 +555,10 @@ namespace KimoEt
             if (!isPaused && !isWindowSetup)
             {
                 isWindowSetup = true;
-                var windowManager = ProcessWindowManager.Instance;
-                windowManager.Init("Eternal");
-                windowManager.BindLocationToThisWindow(this);
-                //windowManager.BringWindowForward();
+                ProcessWindowManager.Instance.Init("Eternal");
 
-                //toDebug = FindName("DraftPickNumber") as TextBox;
                 SetupPickNumber();
                 SetupCardReviews();
-                //SetupCardLabelsRatingColors();
             }
 
             MainCanvas.Visibility = isPaused ? Visibility.Hidden : Visibility.Visible;
@@ -895,14 +609,14 @@ namespace KimoEt
             SettingsCanvas.Visibility = SettingsCanvas.Visibility == Visibility.Visible ? Visibility.Hidden : Visibility.Visible;
         }
 
+        private void OnHelpButtonClick(object sender, RoutedEventArgs e)
+        {
+            DialogWindowManager.ShowHelp(HolderCanvas);
+        }
+
         private void QuitButtonClick(object sender, RoutedEventArgs e)
         {
             System.Windows.Application.Current.Shutdown();
-        }
-
-        private static string GetSearchButtonName(CardNameLocation location)
-        {
-            return "button" + location.ToString() + "search";
         }
 
         private static string GetBestGuessLabelName(CardNameLocation location)
@@ -920,35 +634,6 @@ namespace KimoEt
             return CardNameLocation.FromString(labelName.Replace("label", "").Replace("bestGuess", ""));
         }
 
-        private static CardNameLocation GetLocationFromSearchButtonName(string btnName)
-        {
-            return CardNameLocation.FromString(btnName.Replace("button", "").Replace("search", ""));
-        }
-
-        private CardNameLocation GetLocationFromSearchCanvasName(string searchCanvasName)
-        {
-            return CardNameLocation.FromString(searchCanvasName.Replace("searchCanvas", ""));
-        }
-
-        //protected override void OnSourceInitialized(EventArgs e)
-        //{
-        //    base.OnSourceInitialized(e);
-
-        //    //Set the window style to noactivate.
-        //    WindowInteropHelper helper = new WindowInteropHelper(this);
-        //    SetWindowLong(helper.Handle, GWL_EXSTYLE,
-        //        GetWindowLong(helper.Handle, GWL_EXSTYLE) | WS_EX_NOACTIVATE);
-        //}
-
-        //private const int GWL_EXSTYLE = -20;
-        //private const int WS_EX_NOACTIVATE = 0x08000000;
-
-        //[DllImport("user32.dll")]
-        //public static extern IntPtr SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
-
-        //[DllImport("user32.dll")]
-        //public static extern int GetWindowLong(IntPtr hWnd, int nIndex);
-
         #region Window styles
 
         void MainWindow_Loaded(object sender, RoutedEventArgs e)
@@ -962,19 +647,9 @@ namespace KimoEt
         }
 
         [Flags]
-        public enum ExtendedWindowStyles
-        {
-            // ...
-            WS_EX_TOOLWINDOW = 0x00000080,
-            // ...
-        }
+        public enum ExtendedWindowStyles { WS_EX_TOOLWINDOW = 0x00000080 }
 
-        public enum GetWindowLongFields
-        {
-            // ...
-            GWL_EXSTYLE = (-20),
-            // ...
-        }
+        public enum GetWindowLongFields { GWL_EXSTYLE = (-20) }
 
         [DllImport("user32.dll")]
         public static extern IntPtr GetWindowLong(IntPtr hWnd, int nIndex);

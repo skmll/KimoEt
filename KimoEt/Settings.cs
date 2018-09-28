@@ -22,6 +22,7 @@ namespace KimoEt
         public List<string> RatingColorUserModeColors { get; set; }
         public System.Windows.Point MenuPoint { get; set; }
         public System.Windows.Point RatingColorsRulerPoint { get; set; }
+        public decimal LastVersionUsed { get; set; }
 
         private static Settings BrandNewSettings()
         {
@@ -30,7 +31,8 @@ namespace KimoEt
                 RatingColorMode = RATING_COLOR_DEFAULT,
                 RatingColorUserModeColors = new List<string>(RatingsColorsDefault),
                 MenuPoint = new System.Windows.Point(1300, 115),
-                RatingColorsRulerPoint = new System.Windows.Point(50, 50)
+                RatingColorsRulerPoint = new System.Windows.Point(50, 50),
+                LastVersionUsed = 0m
             };
         }
 
@@ -49,6 +51,12 @@ namespace KimoEt
         public void SetNewMenuPosition(System.Windows.Point point)
         {
             MenuPoint = point;
+            SaveSettingsToDisk();
+        }
+
+        public void SetNewLastVersionUsed(decimal version)
+        {
+            LastVersionUsed = version;
             SaveSettingsToDisk();
         }
 

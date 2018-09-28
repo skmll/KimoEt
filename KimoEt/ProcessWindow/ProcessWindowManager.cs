@@ -61,13 +61,13 @@ namespace KimoEt.ProcessWindow
 
         private void TargetMoved(IntPtr hWinEventHook, uint eventType, IntPtr lParam, int idObject, int idChild, uint dwEventThread, uint dwmsEventTime)
         {
-            if (windowToBind != null)
+            if (windowToBind != null && Application.Current != null)
             {
                 IntPtr? windowHandle = null;
                 try
                 {
                     windowHandle = new WindowInteropHelper(Application.Current.MainWindow).Handle;
-                } catch { /* do nothing*/}
+                } catch (Exception) { /* do nothing*/}
 
                 IntPtr foregroundWindowHandle = User32.GetForegroundWindow();
 
@@ -89,10 +89,13 @@ namespace KimoEt.ProcessWindow
                     } catch { /* do nothing */ }
 
                     var newLocation = GetWindowRect();
-                    windowToBind.Left = newLocation.Left;
-                    windowToBind.Top = newLocation.Top;
-                    windowToBind.Width = newLocation.Right - newLocation.Left;
-                    windowToBind.Height = newLocation.Bottom - newLocation.Top;
+                    windowToBind.Left = newLocation.Left / MainWindow.ScaleFactorX;
+                    windowToBind.Top = newLocation.Top / MainWindow.ScaleFactorY;
+                    windowToBind.Width = newLocation.Right / MainWindow.ScaleFactorX - newLocation.Left / MainWindow.ScaleFactorX;
+                    windowToBind.Height = newLocation.Bottom / MainWindow.ScaleFactorY - newLocation.Top / MainWindow.ScaleFactorY;
+
+                    wToBindLeft = newLocation.Left;
+                    wToBindTop = newLocation.Top;
                 }
             }
         }
@@ -134,6 +137,8 @@ namespace KimoEt.ProcessWindow
             return bmp;
         }
 
+        int wToBindLeft;
+        int wToBindTop;
         public Bitmap GetWindowAreaBitmap(RECT area, bool shouldBringWindowForward)
         {
             if (shouldBringWindowForward)
@@ -141,14 +146,12 @@ namespace KimoEt.ProcessWindow
                 BringWindowForward();
             }
 
-            var rect = GetWindowRect();
-
             var bmp = new Bitmap(area.Width, area.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
             Graphics graphics = Graphics.FromImage(bmp);
             graphics.SmoothingMode = SmoothingMode.None;
             graphics.InterpolationMode = InterpolationMode.Bicubic;
             graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
-            graphics.CopyFromScreen(rect.Left + area.Left, rect.Top + area.Top, 0, 0, area.Size, CopyPixelOperation.SourceCopy);
+            graphics.CopyFromScreen(wToBindLeft + area.Left, wToBindTop + area.Top, 0, 0, area.Size, CopyPixelOperation.SourceCopy);
 
             return bmp;
         }
@@ -157,6 +160,14 @@ namespace KimoEt.ProcessWindow
         {
             var rect = new RECT();
             User32.GetWindowRect(procWindowHandle, ref rect);
+
+            var clientRect = new RECT();
+            User32.GetClientRect(procWindowHandle, ref clientRect);
+
+            var processWindowTitleHeight = (rect.Bottom - rect.Top) - (clientRect.Bottom - clientRect.Top);
+            rect.Top += processWindowTitleHeight - (int)((MainWindow.ScaleFactorY - 1) * 6);
+            rect.Left += (int)((MainWindow.ScaleFactorX - 1) * 6);
+
             return rect;
         }
 
@@ -171,7 +182,6 @@ namespace KimoEt.ProcessWindow
             }
             else
             {
-
                 Console.WriteLine("Window was already forward");
             }
         }
@@ -191,6 +201,10 @@ namespace KimoEt.ProcessWindow
 
             [DllImport("user32.dll")]
             internal static extern IntPtr GetForegroundWindow();
+
+            [DllImport("user32.dll")]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            internal static extern bool GetClientRect(IntPtr hWnd, ref RECT rect);
 
             [DllImport("user32.dll")]
             [return: MarshalAs(UnmanagedType.Bool)]
