@@ -11,7 +11,7 @@ namespace KimoEt.EternalSpecifics
     static class DraftScreen
     {
         private static readonly int FIRST_CARD_RELATIVE_X = 400;
-        private static readonly int FIRST_CARD_RELATIVE_Y = 281 - 39;
+        private static readonly int FIRST_CARD_RELATIVE_Y = 242;
 
         private static readonly int CARD_NAME_WIDTH = 161;
         private static readonly int CARD_NAME_HEIGHT = 14;
@@ -105,16 +105,16 @@ namespace KimoEt.EternalSpecifics
             {
                 return new RECT(
                     1076,
-                    1040 - 39, 
+                    1001, 
                     1250,
-                    1070 - 39
+                    1031
                     );
             }
             return new RECT(
                 1060,
-                1040 - 39, 
+                1001,
                 1250,
-                1070 - 39
+                1031
                 );
         }
 
