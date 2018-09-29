@@ -17,8 +17,13 @@ namespace KimoEt
         public static readonly int RATING_COLOR_NONE = 0;
         public static readonly int RATING_COLOR_DEFAULT = 1;
         public static readonly int RATING_COLOR_USER = 2;
+
+        public static readonly int USE_TDC_TIER_LIST = 0;
+        public static readonly int USE_SUNYVEIL_TIER_LIST = 1;
+        public static readonly int USE_BOTH_TIER_LIST = 2;
         
         public int RatingColorMode { get; set; }
+        public int TierListMode { get; set; }
         public List<string> RatingColorUserModeColors { get; set; }
         public System.Windows.Point MenuPoint { get; set; }
         public System.Windows.Point RatingColorsRulerPoint { get; set; }
@@ -29,6 +34,7 @@ namespace KimoEt
             return new Settings()
             {
                 RatingColorMode = RATING_COLOR_DEFAULT,
+                TierListMode = USE_TDC_TIER_LIST,
                 RatingColorUserModeColors = new List<string>(RatingsColorsDefault),
                 MenuPoint = new System.Windows.Point(1300, 115),
                 RatingColorsRulerPoint = new System.Windows.Point(50, 50),
@@ -79,6 +85,23 @@ namespace KimoEt
             else
             {
                 RatingColorMode = RATING_COLOR_NONE;
+            }
+            SaveSettingsToDisk();
+        }
+
+        public void SetNewTierListString(string text)
+        {
+            if (text == "TDC's")
+            {
+                TierListMode = USE_TDC_TIER_LIST;
+            }
+            else if (text == "Sunyveil's")
+            {
+                TierListMode = USE_SUNYVEIL_TIER_LIST;
+            }
+            else
+            {
+                TierListMode = USE_BOTH_TIER_LIST;
             }
             SaveSettingsToDisk();
         }

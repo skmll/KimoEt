@@ -24,11 +24,15 @@ namespace KimoEt.ReviewDatabase
         private static readonly int mgallopCommentIndex = 9;
         private static readonly int isomorphicCommentIndex = 10;
 
-        public Dictionary<CardName, CardReview> cardReviewsByName = new Dictionary<CardName, CardReview>();
+        private static readonly int ratingIndex = 1;
+        private static readonly int splashableIndex = 2;
+        private static readonly int conditionalIndex = 3;
+
+        public Dictionary<CardName, Dictionary<Team, CardReview>> cardReviewsByNameByTeam = new Dictionary<CardName, Dictionary<Team, CardReview>>();
 
         public class CardName
         {
-            string name;
+            public string name;
 
             public CardName(string name)
             {
@@ -70,10 +74,16 @@ namespace KimoEt.ReviewDatabase
 
         private void LoadCardReviews()
         {
+            LoadTDCsReviews();
+            LoadSunyveilsReviews();
+        }
+
+        private void LoadTDCsReviews()
+        {
             //Card,Pack,Flash,Drifter,Mgallop,Isomorphic,Average,Flash,Drifter,Mgallop,Isomorphic
             foreach (var line in File.ReadAllLines(@"tierLists/TDC.csv").Skip(1).Skip(1))
             {
-                var review = new CardReview();
+                var review = new TdcCardReview();
                 var columns = line.Split(',');
 
                 int deltaIndex = 0;
@@ -144,63 +154,70 @@ namespace KimoEt.ReviewDatabase
                     deltaIndex += (numberOfIndexJumps - 1);
                     i += numberOfIndexJumps;
                 }
-                cardReviewsByName[new CardName(review.Name)] = review;
+
+                if (!cardReviewsByNameByTeam.ContainsKey(new CardName(review.Name)))
+                {
+                    cardReviewsByNameByTeam[new CardName(review.Name)] = new Dictionary<Team, CardReview>();
+                }
+                cardReviewsByNameByTeam[new CardName(review.Name)][Team.TDC] = review;
             }
         }
 
-        public class CardReview
+        private void LoadSunyveilsReviews()
         {
-            public string Name { get; set; }
-            public string Pack { get; set; }
-            public Dictionary<string, string> RatingsByReviewer { get; set; }
-            public Dictionary<string, string> CommentsByReviewer { get; set; }
-            public string AverageRating { get; set; }
-
-            public CardReview()
+            //each line=
+            //cardname, rating, splashable, conditional
+            foreach (var line in File.ReadAllLines(@"tierLists/Sunyveil.csv").Skip(1))
             {
-                RatingsByReviewer = new Dictionary<string, string>();
-                CommentsByReviewer = new Dictionary<string, string>();
-            }
+                var review = new SunyveilCardReview();
+                var columns = line.Split(',');
 
-            public override bool Equals(object obj)
-            {
-                var review = obj as CardReview;
-                return review != null &&
-                       Name == review.Name &&
-                       Pack == review.Pack &&
-                       EqualityComparer<Dictionary<string, string>>.Default.Equals(RatingsByReviewer, review.RatingsByReviewer) &&
-                       EqualityComparer<Dictionary<string, string>>.Default.Equals(CommentsByReviewer, review.CommentsByReviewer) &&
-                       AverageRating == review.AverageRating;
-            }
-
-            public override int GetHashCode()
-            {
-                var hashCode = -117006829;
-                hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Name);
-                hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Pack);
-                hashCode = hashCode * -1521134295 + EqualityComparer<Dictionary<string, string>>.Default.GetHashCode(RatingsByReviewer);
-                hashCode = hashCode * -1521134295 + EqualityComparer<Dictionary<string, string>>.Default.GetHashCode(CommentsByReviewer);
-                hashCode = hashCode * -1521134295 + AverageRating.GetHashCode();
-                return hashCode;
-            }
-
-            public override string ToString()
-            {
-                return $"{Name}: {AverageRating}";
-            }
-
-            public string getStringOfAllComments()
-            {
-                string comments = "";
-                foreach(var reviewer in CommentsByReviewer.Keys)
+                int deltaIndex = 0;
+                for (int i = 0; i < columns.Length;)
                 {
-                    string comment = CommentsByReviewer[reviewer];
-                    if (comment != "")
+                    //stores the number of index jumps we did on this iteration
+                    int numberOfIndexJumps = 1;
+
+                    var finalColumn = columns[i];
+
+                    if (finalColumn.StartsWith("\""))
                     {
-                        comments += reviewer + ": " + comment + "\n";  
+                        int quotesOccurence = finalColumn.Split('\"').Length - 1; ;
+                        while (quotesOccurence != 2 && (i + numberOfIndexJumps) < columns.Length)
+                        {
+                            finalColumn += "," + columns[i + numberOfIndexJumps];
+                            quotesOccurence = finalColumn.Split('\"').Length - 1;
+                            numberOfIndexJumps++;
+                        }
+                        finalColumn = finalColumn.Replace("\"", "");
                     }
+
+                    if (i == nameIndex)
+                    {
+                        review.Name = finalColumn;
+                    }
+                    else if (i == ratingIndex + deltaIndex)
+                    {
+                        review.AverageRating = finalColumn;
+                    }
+                    else if (i == splashableIndex + deltaIndex)
+                    {
+                        review.Splashable = finalColumn.Equals("TRUE");
+                    }
+                    else if (i == conditionalIndex + deltaIndex)
+                    {
+                        review.Conditional = finalColumn.Equals("TRUE");
+                    }
+
+                    deltaIndex += (numberOfIndexJumps - 1);
+                    i += numberOfIndexJumps;
                 }
-                return comments;
+
+                if (!cardReviewsByNameByTeam.ContainsKey(new CardName(review.Name)))
+                {
+                    cardReviewsByNameByTeam[new CardName(review.Name)] = new Dictionary<Team, CardReview>();
+                }
+                cardReviewsByNameByTeam[new CardName(review.Name)][Team.SUNYVEIL] = review;
             }
         }
     }

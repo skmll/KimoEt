@@ -49,7 +49,7 @@
                     <Button Name="PausePlayBtn" Height="30" Click="PausePlayButtonClick" Background="Gray" Canvas.Top="20" Canvas.Left="10">
                         <Image Source="Images/resume_icon.png"/>
                     </Button>
-                    <Button Name="RefreshBtn" Height="30" Click="RefreshButtonClick" Background="Gray" Canvas.Top="20" Canvas.Left="50">
+                    <Button Name="RefreshBtn" Height="30" Click="RefreshButtonClick" Background="Gray" Canvas.Top="20" Canvas.Left="50" FocusVisualStyle="{x:Null}">
                         <Image Source="Images/refresh_icon.png"/>
                     </Button>
                     <Button Name="SettingsBtn" Height="30" Click="SettingsButtonClick" Background="Gray" Canvas.Top="20" Canvas.Left="90">
@@ -58,44 +58,53 @@
                     <Button Name="QuitBtn" Height="30" Click="QuitButtonClick" Background="Gray" Canvas.Top="20" Canvas.Left="130">
                         <Image Source="Images/quit_icon.png"/>
                     </Button>
-                    <Canvas Name="SettingsCanvas" Height="50" Width="168" Canvas.Top="55" Background="Gray" Visibility="Hidden">
-                        <TextBlock Text="Ratings Color Mode" FontSize="10" FontFamily="Verdana" Foreground="White" Width="148" Canvas.Left="10" Canvas.Top="5" Height="13" />
-                        <ComboBox Name="ComboboxColorMode" Canvas.Top="20" Width="120" Height="20" Canvas.Left="10" SelectionChanged="OnColorModeChanged" SelectedValuePath="Content" >
-                            <ComboBoxItem Content="None"/>
-                            <ComboBoxItem Content="Default"/>
-                            <ComboBoxItem Content="User"/>
-                        </ComboBox>
-                        <Button Content=">>" BorderThickness="0" Background="Transparent" FontSize="10" FontFamily="Verdana" Foreground="White" Width="25" Canvas.Left="135" Canvas.Top="23" Height="13" Click="OnShowChooseColorsClick" />
+                    <StackPanel Orientation="Vertical" Canvas.Top="55">
+                        <Canvas Name="SettingsCanvas" Height="95" Width="168" Background="Gray" Visibility="Visible">
+                            <TextBlock Text="Ratings Color Mode" FontSize="10" FontFamily="Verdana" Foreground="White" Width="148" Canvas.Left="10" Canvas.Top="5" Height="13" />
+                            <ComboBox Name="ComboboxColorMode" Canvas.Top="20" Width="120" Height="20" Canvas.Left="10" SelectionChanged="OnColorModeChanged" SelectedValuePath="Content" >
+                                <ComboBoxItem Content="None"/>
+                                <ComboBoxItem Content="Default"/>
+                                <ComboBoxItem Content="User"/>
+                            </ComboBox>
+                            <TextBlock Text="Tier list to use" FontSize="10" FontFamily="Verdana" Foreground="White" Width="148" Canvas.Left="10" Canvas.Top="45" Height="13" />
+                            <ComboBox Name="ComboboxTierlistMode" Canvas.Top="60" Width="120" Height="20" Canvas.Left="10" SelectionChanged="OnTierlistModeChanged" SelectedValuePath="Content" >
+                                <ComboBoxItem Content="TDC's"/>
+                                <ComboBoxItem Content="Sunyveil's"/>
+                                <ComboBoxItem Content="Both"/>
+                            </ComboBox>
+                            <Button Content=">>" BorderThickness="0" Background="Transparent" FontSize="10" FontFamily="Verdana" Foreground="White" Width="25" Canvas.Left="135" Canvas.Top="23" Height="13" Click="OnShowChooseColorsClick" />
 
-                        <StackPanel Name="UserColorsPanel" Height="109" Width="128" Canvas.Top="9" Background="Gray" Canvas.Left="171" Visibility="Hidden">
-                            <StackPanel Orientation="Horizontal" Margin="2,2,10,0">
-                                <TextBlock Text="Ratings Colors" FontSize="10" FontFamily="Verdana" Foreground="White" Height="12" Margin="0,0,20,0" />
-                                <Button BorderThickness="0" Background="Transparent" Width="20" Height="16" Click="OnShowColorsRulerClick" Margin="0,0,103,0">
-                                    <Image Source="Images/see_icon.png"/>
-                                </Button>
+                            <StackPanel Name="UserColorsPanel" Height="109" Width="128" Canvas.Top="9" Background="Gray" Canvas.Left="171" Visibility="Hidden">
+                                <StackPanel Orientation="Horizontal" Margin="2,2,10,0">
+                                    <TextBlock Text="Ratings Colors" FontSize="10" FontFamily="Verdana" Foreground="White" Height="12" Margin="0,0,20,0" />
+                                    <Button BorderThickness="0" Background="Transparent" Width="20" Height="16" Click="OnShowColorsRulerClick" Margin="0,0,103,0">
+                                        <Image Source="Images/see_icon.png"/>
+                                    </Button>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="5,5,10,0">
+                                    <TextBlock Text="Rating 0.0" FontSize="10" FontFamily="Verdana" Foreground="White" Height="12" />
+                                    <Button Name="Rating_0" Background="Red" Width="60" Margin="10,0,0,0" Click="OnRatingColorClick"></Button>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="5,5,10,0">
+                                    <TextBlock Text="Rating 1.6" FontSize="10" FontFamily="Verdana" Foreground="White" Height="12"  />
+                                    <Button Name="Rating_16" Background="Red" Width="60" Margin="10,0,0,0" Click="OnRatingColorClick"></Button>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="5,5,10,0">
+                                    <TextBlock Text="Rating 3.9" FontSize="10" FontFamily="Verdana" Foreground="White" Height="12" />
+                                    <Button Name="Rating_39" Background="Red" Width="60" Margin="10,0,0,0" Click="OnRatingColorClick"></Button>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="5,5,10,0">
+                                    <TextBlock Text="Rating 4.0" FontSize="10" FontFamily="Verdana" Foreground="White" Height="12"  />
+                                    <Button Name="Rating_40" Background="Red" Width="60" Margin="10,0,0,0" Click="OnRatingColorClick"></Button>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="5,5,10,0">
+                                    <TextBlock Text="Rating 5.0" FontSize="10" FontFamily="Verdana" Foreground="White" Height="12"  />
+                                    <Button Name="Rating_50" Background="Red" Width="60" Margin="10,0,0,0" Click="OnRatingColorClick"></Button>
+                                </StackPanel>
                             </StackPanel>
-                            <StackPanel Orientation="Horizontal" Margin="5,5,10,0">
-                                <TextBlock Text="Rating 0.0" FontSize="10" FontFamily="Verdana" Foreground="White" Height="12" />
-                                <Button Name="Rating_0" Background="Red" Width="60" Margin="10,0,0,0" Click="OnRatingColorClick"></Button>
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal" Margin="5,5,10,0">
-                                <TextBlock Text="Rating 1.6" FontSize="10" FontFamily="Verdana" Foreground="White" Height="12"  />
-                                <Button Name="Rating_16" Background="Red" Width="60" Margin="10,0,0,0" Click="OnRatingColorClick"></Button>
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal" Margin="5,5,10,0">
-                                <TextBlock Text="Rating 3.9" FontSize="10" FontFamily="Verdana" Foreground="White" Height="12" />
-                                <Button Name="Rating_39" Background="Red" Width="60" Margin="10,0,0,0" Click="OnRatingColorClick"></Button>
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal" Margin="5,5,10,0">
-                                <TextBlock Text="Rating 4.0" FontSize="10" FontFamily="Verdana" Foreground="White" Height="12"  />
-                                <Button Name="Rating_40" Background="Red" Width="60" Margin="10,0,0,0" Click="OnRatingColorClick"></Button>
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal" Margin="5,5,10,0">
-                                <TextBlock Text="Rating 5.0" FontSize="10" FontFamily="Verdana" Foreground="White" Height="12"  />
-                                <Button Name="Rating_50" Background="Red" Width="60" Margin="10,0,0,0" Click="OnRatingColorClick"></Button>
-                            </StackPanel>
-                        </StackPanel>
-                    </Canvas>
+                        </Canvas>
+                        <TextBox Name="SearchTextBox" Width="168" Visibility="Hidden" Background="Black" Foreground="White"></TextBox>
+                    </StackPanel>
                 </Canvas>
             </Border>
             <Canvas Name="MainCanvas">

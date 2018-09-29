@@ -47,6 +47,9 @@ namespace KimoEt.Utililties
 
         private void Control_PreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
+            if (window.SearchTextBox.IsFocused)
+                return;
+
             if (_buttonPosition == null)
                 _buttonPosition = element.TransformToAncestor(canvas).Transform(new Point(0, 0));
             var mousePosition = Mouse.GetPosition(canvas);
@@ -60,6 +63,9 @@ namespace KimoEt.Utililties
 
         private void Control_PreviewMouseUp(object sender, MouseButtonEventArgs e)
         {
+            if (window.SearchTextBox.IsFocused && !_isMoving)
+                return;
+
             _currentTT = element.RenderTransform as TranslateTransform;
             ProcessWindowManager.Instance.ReleaseFocus();
             _isMoving = false;

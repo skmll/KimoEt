@@ -186,6 +186,23 @@ namespace KimoEt.ProcessWindow
             }
         }
 
+        public void BringOurWindowForward()
+        {
+            IntPtr? windowHandle = null;
+            try
+            {
+                windowHandle = new WindowInteropHelper(windowToBind).Handle;
+            }
+            catch (Exception) { /* do nothing*/}
+
+            if (windowHandle == null)
+                return;
+
+            User32.SetForegroundWindow((IntPtr)windowHandle);
+            User32.ShowWindow(procWindowHandle, User32.SW_RESTORE);
+            Thread.Sleep(200);
+        }
+
         private delegate void WinEventDelegate(IntPtr hWinEventHook, uint eventType,
                         IntPtr hwnd, int idObject, int idChild, uint dwEventThread, uint dwmsEventTime);
 

@@ -3,6 +3,7 @@ using KimoEt.ProcessWindow;
 using KimoEt.ReviewDatabase;
 using KimoEt.UI;
 using KimoEt.Utililties;
+using KimoEt.Utilities;
 using KimoEt.VisualRecognition;
 using KimoEt.VisualRecognition.Cards;
 using KimoEtUpdater;
@@ -36,12 +37,14 @@ namespace KimoEt
         private int draftPickNumber = -1;
         private bool isDoubleDigitsPickNumber = false;
         private bool isWindowSetup = false;
-        private Dictionary<CardNameLocation, List<CardGuess>> currentCardGuessesByLocation = new Dictionary<CardNameLocation, List<CardGuess>>();
+        private Dictionary<CardNameLocation, HashSet<CardGuess>> currentCardGuessesByLocation = new Dictionary<CardNameLocation, HashSet<CardGuess>>();
         public static SolidColorBrush backgroundBrush = new SolidColorBrush(Utils.ConvertStringToColor("#1E1E1E")) { Opacity = 0.7f };
         public static string VERSION_STRING = Updater.VERSION.ToString(CultureInfo.InvariantCulture);
 
         public static double ScaleFactorX;
         public static double ScaleFactorY;
+
+        HotKey hotKey;
 
         public MainWindow()
         {
@@ -50,6 +53,7 @@ namespace KimoEt
             ProcessWindowManager.Instance.BindLocationToThisWindow(this);
             Settings.LoadSettingsFromDisk();
             TierListDownloader.DownloadTDCs();
+            TierListDownloader.DownloadSunyveils();
 
             if (Settings.Instance.LastVersionUsed < Updater.VERSION)
             {
@@ -57,6 +61,8 @@ namespace KimoEt
                 Settings.Instance.SetNewLastVersionUsed(Updater.VERSION);
             }
 
+            hotKey = new HotKey(Key.F, KeyModifier.Ctrl, OnSearchShortcut);
+            SearchTextBox.Background = backgroundBrush;
             KimoEtTitle.Text = "KimoEt - v" + VERSION_STRING;
             FontFamily = new FontFamily("Segoe UI");
 
@@ -65,6 +71,7 @@ namespace KimoEt
             Canvas.SetTop(CanvasBorder, Settings.Instance.MenuPoint.Y);
 
             ComboboxColorMode.SelectedIndex = Settings.Instance.RatingColorMode;
+            ComboboxTierlistMode.SelectedIndex = Settings.Instance.TierListMode;
             CheckForUpdates();
 
             this.Loaded += (s, e) =>
@@ -72,7 +79,7 @@ namespace KimoEt
                 Matrix m = PresentationSource.FromVisual(this).CompositionTarget.TransformToDevice;
                 ScaleFactorX = m.M11;
                 ScaleFactorY = m.M22;
-            };
+            }; 
         }
 
         private static void CheckForUpdates()
@@ -184,11 +191,24 @@ namespace KimoEt
             double top = Canvas.GetTop(element);
             double left = Canvas.GetLeft(element);
 
+            if (!(element.RenderTransform is TranslateTransform))
+            {
+                element.RenderTransform = new TranslateTransform();
+            }
+
             double translatedX = (element.RenderTransform as TranslateTransform).X;
             double translatedY = (element.RenderTransform as TranslateTransform).Y;
 
             double realTop = top + translatedY;
             double realLeft = left + translatedX;
+
+            StackPanel searchedCommentsPanel = this.FindName("ManualSearchControl") as StackPanel;
+            if (element == searchedCommentsPanel)
+            {
+                // we don't care about this position
+                return;
+            }
+
 
             if (element == CanvasBorder)
             {
@@ -280,17 +300,29 @@ namespace KimoEt
             foreach (var location in DraftScreen.GetCardNameLocationsAvailable(draftPickNumber))
             {
 
-                Task.Run(() =>
-                {
-                    var cardGuesses = CardRecognitionManager.Instance.ReadCardName(location, ProcessWindowManager.Instance.GetWindowAreaBitmap(location.Rect, true));
-
-                    if (cardGuesses == null || cardGuesses.Count == 0)
-                    {
-                        return;
-                    }
-                    UpdateCardReview(location, cardGuesses);
-                });
+                Task.Run(RecognizeForLocation(location));
             }
+        }
+
+        private Action RecognizeForLocation(CardNameLocation location)
+        {
+            return () =>
+            {
+                var cardGuesses = CardRecognitionManager.Instance.ReadCardName(location);
+
+                if (cardGuesses == null || cardGuesses.Count == 0)
+                {
+                   //we failed the recognition, set a new task for this location for later:
+                   Console.WriteLine(Utils.GetSecondsSinceEpoch() + " - we failed the recognition, set a new task for this location for later");
+                    Task.Delay(1000).ContinueWith((obj) =>
+                    {
+                        Console.WriteLine(Utils.GetSecondsSinceEpoch() + " - starting now!");
+                        Task.Run(RecognizeForLocation(location));
+                    });
+
+                }
+                UpdateCardReview(location, cardGuesses);
+            };
         }
 
         private void SetupPickNumber()
@@ -340,7 +372,7 @@ namespace KimoEt
                             DispatcherPriority.Normal,
                             (Action)(() => OnNewPickNumber(pickNumber, txtNumber)));
 
-                        } catch { /*do nothing*/}
+                        } catch (Exception) { /*do nothing*/}
                     }
 
                     Thread.Sleep(1000);
@@ -403,7 +435,7 @@ namespace KimoEt
         }
     
 
-        private void UpdateCardReview(CardNameLocation location, List<CardGuess> cardGuesses)
+        private void UpdateCardReview(CardNameLocation location, HashSet<CardGuess> cardGuesses)
         {
             try
             {
@@ -414,7 +446,7 @@ namespace KimoEt
             catch { /*do nothing*/}
         }
 
-        private void InternalUpdateCardReview(CardNameLocation location, List<CardGuess> cardGuesses)
+        private void InternalUpdateCardReview(CardNameLocation location, HashSet<CardGuess> cardGuesses)
         {
             currentCardGuessesByLocation[location] = cardGuesses;
 
@@ -422,11 +454,21 @@ namespace KimoEt
             var myTextBox = (Button)this.FindName(name);
             myTextBox.Visibility = Visibility.Visible;
 
-            float rating = float.Parse(cardGuesses.Last().Review.AverageRating, CultureInfo.InvariantCulture.NumberFormat);
-            myTextBox.Background = backgroundBrush;
-            myTextBox.Foreground = new SolidColorBrush(Utils.GetMediaColorFromDrawingColor(Utils.GetColorForRating((decimal)rating)));
+            if (cardGuesses != null)
+            {
+                float rating = CardReviewForUiUtils.GetRatingForColor(cardGuesses.Last());
+                myTextBox.Background = backgroundBrush;
+                myTextBox.Foreground = new SolidColorBrush(Utils.GetMediaColorFromDrawingColor(Utils.GetColorForRating((decimal)rating)));
 
-            myTextBox.Content = cardGuesses.Last().Review.ToString() + (cardGuesses.Count > 1 ? "*" : "");
+                myTextBox.Content = CardReviewForUiUtils.GetRatingLabel(cardGuesses);
+            } else
+            {
+                myTextBox.Background = backgroundBrush;
+                myTextBox.Foreground = new SolidColorBrush(Colors.Red);
+
+                myTextBox.Content = "FAILED RECOGNITION";
+            }
+
             Utils.UpdateFontSizeToFit(myTextBox);
 
             if (DraftScreen.GetCardNameLocationsAvailable(draftPickNumber).Last().Equals(location))
@@ -438,10 +480,13 @@ namespace KimoEt
         private void OnMainLabelClick(object sender, RoutedEventArgs e)
         {
             ProcessWindowManager.Instance.ReleaseFocus();
+
             string name = ((Button)sender).Name;
             var location = GetLocationFromBestGuessLabelName(name);
-            List<CardGuess> guesses;
+
+            HashSet<CardGuess> guesses;
             currentCardGuessesByLocation.TryGetValue(location, out guesses);
+
             if (guesses == null) return;
 
             ScrollViewer commentsScrollViewer = this.FindName("canvas" + location.ToString() + "comments") as ScrollViewer;
@@ -473,7 +518,7 @@ namespace KimoEt
                     Foreground = new SolidColorBrush(Colors.White),
                     BorderThickness = new Thickness(0),
                     Name = "textbox" + location.ToString() + "comments",
-                    Text = GetCommentsText(guesses.Last())
+                    Text = CardReviewForUiUtils.GetCommentsText(guesses.Last())
                 };
 
                 commentsScrollViewer.Content = comments;
@@ -486,7 +531,7 @@ namespace KimoEt
             {
                 commentsScrollViewer.Visibility = commentsScrollViewer.Visibility == Visibility.Visible ? Visibility.Hidden : Visibility.Visible;
                 var textBox = (TextBox)commentsScrollViewer.FindName("textbox" + location.ToString() + "comments");
-                textBox.Text = GetCommentsText(guesses.Last());
+                textBox.Text = CardReviewForUiUtils.GetCommentsText(guesses.Last());
             }
 
             if (commentsScrollViewer.Visibility == Visibility.Visible)
@@ -501,46 +546,6 @@ namespace KimoEt
             {
                 OnMainLabelClick(sender, e);
             }
-        }
-
-        private void tb_GotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
-        {
-            if (sender is TextBox)
-            {
-                //If nothing has been entered yet.
-                if (((TextBox)sender).Foreground == Brushes.Gray)
-                {
-                    ((TextBox)sender).Text = "";
-                    ((TextBox)sender).Foreground = Brushes.White;
-                }
-            }
-        }
-
-        private static string GetCommentsText(CardGuess guess)
-        {
-            var commentsText = "";
-
-            ReviewDatabase.ReviewDataSource.CardReview review = guess.Review;
-            Dictionary<string, string> commentsByReviewer = review.CommentsByReviewer;
-            Dictionary<string, string> ratingsByReviewer = review.RatingsByReviewer;
-
-            foreach (var reviewer in commentsByReviewer.Keys)
-            {
-                string comment = commentsByReviewer[reviewer];
-                commentsText += reviewer + " (" + ratingsByReviewer[reviewer] + ")";
-                if (!string.IsNullOrWhiteSpace(comment))
-                {
-                    commentsText += ":\n";
-                    commentsText += "\"" + comment + "\"\n";
-                }
-                else
-                {
-                    commentsText += "\n";
-                }
-                commentsText += "\n";
-            }
-
-            return commentsText;
         }
 
         private void RefreshButtonClick(object sender, RoutedEventArgs e)
@@ -604,14 +609,167 @@ namespace KimoEt
             MakeUnmakeColorsRuler(true);
         }
 
+        private void OnTierlistModeChanged(object sender, SelectionChangedEventArgs e)
+        {
+            string text = (e.AddedItems[0] as ComboBoxItem).Content as string;
+            Settings.Instance.SetNewTierListString(text);
+            GetAllCardReviews();
+        }
+
         private void SettingsButtonClick(object sender, RoutedEventArgs e)
         {
-            SettingsCanvas.Visibility = SettingsCanvas.Visibility == Visibility.Visible ? Visibility.Hidden : Visibility.Visible;
+            SettingsCanvas.Visibility = SettingsCanvas.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
         }
 
         private void OnHelpButtonClick(object sender, RoutedEventArgs e)
         {
             DialogWindowManager.ShowHelp(HolderCanvas);
+        }
+
+        private void OnSearchShortcut(HotKey obj)
+        {
+            ChangeSearchBarVisibilityAndFocus();
+
+            SearchTextBox.PreviewKeyDown += (s, eventArgs) =>
+            {
+                if (eventArgs.Key == Key.Return)
+                {
+                    SearchCardByName();
+                    ChangeSearchBarVisibilityAndFocus();
+                    eventArgs.Handled = true;
+                }
+                else if (eventArgs.Key == Key.Escape)
+                {
+                    ChangeSearchBarVisibilityAndFocus();
+                    eventArgs.Handled = true;
+                }
+            };
+        }
+
+        private void SearchCardByName()
+        {
+            string searchedCardName = SearchTextBox.Text;
+            ReviewDataSource.Instance.cardReviewsByNameByTeam.TryGetValue(new CardName(searchedCardName), out Dictionary<Team, CardReview> reviewFromTextWritten);
+            if (reviewFromTextWritten == null)
+                return;
+
+            var newGuess = new CardGuess
+            {
+                ReviewByTeam = reviewFromTextWritten,
+                Certainty = CardGuess.UNCLEAR_CERTAINTY
+            };
+
+
+            StackPanel searchedCommentsPanel = this.FindName("ManualSearchControl") as StackPanel;
+            if (searchedCommentsPanel == null)
+            {
+                searchedCommentsPanel = new StackPanel
+                {
+                    Name = "ManualSearchControl",
+                    Orientation = Orientation.Vertical,
+                    Background = backgroundBrush,
+                    Width = 210,
+                };
+
+                Canvas.SetLeft(searchedCommentsPanel, 1275);
+                Canvas.SetTop(searchedCommentsPanel, 300);
+                MainCanvas.Children.Add(searchedCommentsPanel);
+                MainCanvas.RegisterName(searchedCommentsPanel.Name, searchedCommentsPanel);
+                
+                ScrollViewer scrollViewerComments = new ScrollViewer
+                {
+                    Width = 210,
+                    Height = 300,
+                    VerticalScrollBarVisibility = ScrollBarVisibility.Hidden,
+                    BorderThickness = new Thickness(0)
+                };
+
+                StackPanel titleCommentsPanel = new StackPanel
+                {
+                    Background = Brushes.DarkCyan,
+                    Orientation = Orientation.Horizontal,
+                    Height = 30,
+                };
+                searchedCommentsPanel.Children.Add(titleCommentsPanel);
+
+                TextBox cardTitle = new TextBox
+                {
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Background = Brushes.DarkCyan,
+                    BorderThickness = new Thickness(0),
+                    Foreground = new SolidColorBrush(Colors.White),
+                    Name = "cardTitle_ManualSearchControl",
+                    Text = CardReviewForUiUtils.GetRatingLabel(new HashSet<CardGuess>() { newGuess }),
+                    FontWeight = FontWeights.Bold,
+                    Padding = new Thickness(5,5,5,5),
+                    Width = 175,
+                };
+                Utils.MakePanelDraggable(searchedCommentsPanel, HolderCanvas, this, this);
+                Utils.UpdateFontSizeToFit(cardTitle);
+                titleCommentsPanel.Children.Add(cardTitle);
+                searchedCommentsPanel.RegisterName(cardTitle.Name, cardTitle);
+
+                Button closeBtn = new Button()
+                {
+                    Content = "X",
+                    Height = 20,
+                    Width = 20,
+                    Background = Brushes.DarkCyan,
+                    HorizontalAlignment = HorizontalAlignment.Right,
+                    Margin = new Thickness(10, 0, 10, 0),
+                    Foreground = new SolidColorBrush(Colors.White),
+                    Padding = new Thickness(5, 0, 5, 0),
+                };
+                titleCommentsPanel.Children.Add(closeBtn);
+                closeBtn.Click += (e, args) =>
+                {
+                    searchedCommentsPanel.Visibility = Visibility.Hidden;
+                };
+
+                TextBox comments = new TextBox
+                {
+                    Width = 210,
+                    Height = 300,
+                    HorizontalAlignment = HorizontalAlignment.Left,
+                    Padding = new Thickness(0,20,0,0),
+                    TextWrapping = TextWrapping.Wrap,
+                    CaretBrush = new SolidColorBrush(Colors.Transparent),
+                    Background = backgroundBrush,
+                    Foreground = new SolidColorBrush(Colors.White),
+                    BorderThickness = new Thickness(0),
+                    Name = "textbox_ManualSearchControl",
+                    Text = CardReviewForUiUtils.GetCommentsText(newGuess),
+                };
+                scrollViewerComments.Content = comments;
+
+                searchedCommentsPanel.Children.Add(scrollViewerComments);
+                searchedCommentsPanel.RegisterName(comments.Name, comments);
+            }
+            else
+            {
+                searchedCommentsPanel.Visibility = Visibility.Visible;
+                (this.FindName("textbox_ManualSearchControl") as TextBox).Text = CardReviewForUiUtils.GetCommentsText(newGuess);
+                (this.FindName("cardTitle_ManualSearchControl") as TextBox).Text = CardReviewForUiUtils.GetRatingLabel(new HashSet<CardGuess>() { newGuess });
+            }
+        }
+
+        private void ChangeSearchBarVisibilityAndFocus()
+        {
+            SearchTextBox.Visibility = SearchTextBox.Visibility == Visibility.Visible ? Visibility.Hidden : Visibility.Visible;
+            if (SearchTextBox.Visibility == Visibility.Visible)
+            {
+                ProcessWindowManager.Instance.ForceFocus();
+                ProcessWindowManager.Instance.BringOurWindowForward();
+                SearchTextBox.Focus();
+            }
+            else
+            {
+                SearchTextBox.Text = "";
+                RefreshBtn.Focus();
+                SearchTextBox.Visibility = Visibility.Hidden;
+                ProcessWindowManager.Instance.ReleaseFocus();
+                ProcessWindowManager.Instance.BringWindowForward();
+            }
         }
 
         private void QuitButtonClick(object sender, RoutedEventArgs e)

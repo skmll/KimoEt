@@ -74,6 +74,23 @@ namespace KimoEt.Utililties
             textBox.FontSize = fontSize;
         }
 
+        public static void UpdateFontSizeToFit(TextBox textBox)
+        {
+            double fontSize = textBox.FontSize;
+            FormattedText ft = new FormattedText(textBox.Text as string, CultureInfo.CurrentCulture, System.Windows.FlowDirection.LeftToRight,
+                                             new Typeface(textBox.FontFamily, textBox.FontStyle, textBox.FontWeight, textBox.FontStretch),
+                                             fontSize, textBox.Foreground);
+            while (textBox.Width < (ft.Width + 10) && fontSize > 2)
+            {
+                fontSize -= 1;
+                ft = new FormattedText(textBox.Text as string, CultureInfo.CurrentCulture, System.Windows.FlowDirection.LeftToRight,
+                                                          new Typeface(textBox.FontFamily, textBox.FontStyle, textBox.FontWeight, textBox.FontStretch),
+                                                          fontSize, textBox.Foreground);
+            }
+
+            textBox.FontSize = fontSize;
+        }
+
         public static void MakePanelDraggable(UIElement toDrag, Canvas canvas, MainWindow window, DraggableHelper.IOnDragEnded onDragEndedListener)
         {
             new DraggableHelper(toDrag, canvas, window, onDragEndedListener).Start();
@@ -180,11 +197,11 @@ namespace KimoEt.Utililties
             FocusManager.SetFocusedElement(scope, parent as IInputElement);
         }
 
-        public static int GetSecondsSinceEpoch()
+        public static long GetSecondsSinceEpoch()
         {
             TimeSpan t = DateTime.UtcNow - new DateTime(1970, 1, 1);
 
-            return  (int)t.TotalSeconds;
+            return  (long)t.TotalMilliseconds;
         }
     }
 }

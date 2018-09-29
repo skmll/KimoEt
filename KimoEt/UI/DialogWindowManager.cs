@@ -147,6 +147,24 @@ namespace KimoEt.UI
             tdcInfoTextBlock.Inlines.Add(linkTierList);
             helpPanel.Children.Add(tdcInfoTextBlock);
 
+            TextBlock sunyveilInfoTextBlock = new TextBlock()
+            {
+                Text = "Huge thanks to Sunyveil for adapting his tier list for me to be able to use it!\n" +
+                "Tier List: ",
+                Foreground = new SolidColorBrush(Colors.White),
+                Margin = new Thickness(10, 0, 10, 10),
+                HorizontalAlignment = HorizontalAlignment.Left,
+                FontSize = 15,
+                LineHeight = 30,
+            };
+            Hyperlink sunylinkTierList = new Hyperlink(new Run("https://docs.google.com/spreadsheets/d/1IeAah8Lx-c1-rQcJ_sBx-z0Eedx_Cjz8jX13WC4YwVc"))
+            {
+                NavigateUri = new Uri("https://docs.google.com/spreadsheets/d/1IeAah8Lx-c1-rQcJ_sBx-z0Eedx_Cjz8jX13WC4YwVc")
+            };
+            sunylinkTierList.RequestNavigate += Hyperlink_RequestNavigate;
+            sunyveilInfoTextBlock.Inlines.Add(sunylinkTierList);
+            helpPanel.Children.Add(sunyveilInfoTextBlock);
+
             Button okButton = new Button()
             {
                 Content = "CLOSE",
