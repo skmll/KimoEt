@@ -59,7 +59,7 @@
                         <Image Source="Images/quit_icon.png"/>
                     </Button>
                     <StackPanel Orientation="Vertical" Canvas.Top="55">
-                        <Canvas Name="SettingsCanvas" Height="95" Width="168" Background="Gray" Visibility="Visible">
+                        <Canvas Name="SettingsCanvas" Height="95" Width="168" Background="Gray" Visibility="Collapsed">
                             <TextBlock Text="Ratings Color Mode" FontSize="10" FontFamily="Verdana" Foreground="White" Width="148" Canvas.Left="10" Canvas.Top="5" Height="13" />
                             <ComboBox Name="ComboboxColorMode" Canvas.Top="20" Width="120" Height="20" Canvas.Left="10" SelectionChanged="OnColorModeChanged" SelectedValuePath="Content" >
                                 <ComboBoxItem Content="None"/>
