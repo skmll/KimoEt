@@ -155,7 +155,7 @@ namespace KimoEt.VisualRecognition.Cards
             }
             finally
             {
-                File.Delete(scaledTempFile);
+                //File.Delete(scaledTempFile);
             }
         }
     }

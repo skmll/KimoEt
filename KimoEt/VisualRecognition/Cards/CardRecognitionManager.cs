@@ -8,6 +8,7 @@ using KimoEt.VisualRecognition.Cards;
 using static KimoEt.EternalSpecifics.DraftScreen;
 using KimoEt.ReviewDatabase;
 using KimoEt.Utililties;
+using KimoEt.EternalSpecifics;
 
 namespace KimoEt.VisualRecognition
 {
@@ -70,7 +71,7 @@ namespace KimoEt.VisualRecognition
             }
             finally
             {
-                File.Delete(scaledTempFile);
+                //File.Delete(scaledTempFile);
             }
             return null;
         }

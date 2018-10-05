@@ -83,6 +83,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="EternalSpecifics\CardNameLocation.cs" />
+    <Compile Include="EternalSpecifics\ForgeScreen.cs" />
+    <Compile Include="EternalSpecifics\Screen.cs" />
     <Compile Include="ProcessWindow\ProcessWindowManager.cs" />
     <Compile Include="ProcessWindow\RECT.cs" />
     <Compile Include="ReviewDatabase\CardReview.cs" />
@@ -149,6 +152,9 @@
     <Content Include="Images\KimoEt.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Images\launch_icon_white.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Images\pause_icon.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -176,6 +182,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="KimoEt.ico" />
+    <Content Include="Images\settings_icon_white.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Images\warning_icon.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

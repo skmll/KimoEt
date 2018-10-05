@@ -8,13 +8,13 @@ using System.Windows;
 
 namespace KimoEt.EternalSpecifics
 {
-    static class DraftScreen
+    public class DraftScreen : Screen
     {
-        private static readonly int FIRST_CARD_RELATIVE_X = 400;
-        private static readonly int FIRST_CARD_RELATIVE_Y = 242;
-
         private static readonly int CARD_NAME_WIDTH = 161;
         private static readonly int CARD_NAME_HEIGHT = 14;
+
+        private static readonly int FIRST_CARD_RELATIVE_X = 400;
+        private static readonly int FIRST_CARD_RELATIVE_Y = 242;
 
         private static readonly int CARD_NAME_X_DIFF = 223;
         private static readonly int CARD_NAME_Y_DIFF = 315;
@@ -22,12 +22,32 @@ namespace KimoEt.EternalSpecifics
         private static readonly int[] ROWS = { 1, 2, 3 };
         private static readonly int[] COLUMNS = { 1, 2, 3, 4 };
 
-        public static List<CardNameLocation> GetAllCardNameLocations()
+        private static DraftScreen instance = null;
+        private static readonly object padlock = new object();
+
+        public static DraftScreen Instance
+        {
+            get
+            {
+                lock (padlock)
+                {
+                    if (instance == null)
+                    {
+                        instance = new DraftScreen();
+                    }
+                    return instance;
+                }
+            }
+        }
+
+        private DraftScreen() { }
+
+        public override List<CardNameLocation> GetAllCardNameLocations()
         {
             return GetAllCardNameLocationsForRowsColumns(ROWS, COLUMNS);
         }
 
-        private static List<CardNameLocation> GetAllCardNameLocationsForRowsColumns(int[] rows, int[] columns)
+        private List<CardNameLocation> GetAllCardNameLocationsForRowsColumns(int[] rows, int[] columns)
         {
             List<CardNameLocation> locations = new List<CardNameLocation>();
 
@@ -42,7 +62,7 @@ namespace KimoEt.EternalSpecifics
             return locations;
         }
 
-        public static List<CardNameLocation> GetCardNameLocationsNotAvailable(int draftPickNumber)
+        public override List<CardNameLocation> GetCardNameLocationsNotAvailable(int draftPickNumber)
         {
             var picksAfterNewPack = (draftPickNumber % 12) - 1;
             if (picksAfterNewPack < 0)
@@ -55,7 +75,7 @@ namespace KimoEt.EternalSpecifics
             return all.GetRange(all.Count - picksAfterNewPack, picksAfterNewPack);
         }
 
-        public static List<CardNameLocation> GetCardNameLocationsAvailable(int draftPickNumber)
+        public override List<CardNameLocation> GetCardNameLocationsAvailable(int draftPickNumber)
         {
             if (draftPickNumber == -1)
             {
@@ -72,7 +92,7 @@ namespace KimoEt.EternalSpecifics
             return all;
         }
 
-        public static RECT GetRectForCard(int row, int column)
+        public override RECT GetRectForCard(int row, int column)
         {
             int mathRow = row - 1;
             int mathColumn = column - 1;
@@ -85,7 +105,7 @@ namespace KimoEt.EternalSpecifics
             int relativeYTop = FIRST_CARD_RELATIVE_Y + mathRow * CARD_NAME_Y_DIFF;
             if (row == 3 || row == 2)
             {
-                relativeYTop+= (row -1);
+                relativeYTop += (row - 1);
             }
 
             int relativeXRight = relativeXLeft + CARD_NAME_WIDTH;
@@ -99,7 +119,7 @@ namespace KimoEt.EternalSpecifics
                 );
         }
         
-        public static RECT GetRectForPickNumber(bool isDoubleDigits = false)
+        public override RECT GetRectForPickNumber(bool isDoubleDigits = false)
         {
             if (!isDoubleDigits)
             {
@@ -118,59 +138,19 @@ namespace KimoEt.EternalSpecifics
                 );
         }
 
-        public static string GetExceptionPickNumber(string readPickNumber)
+        public override string GetExceptionPickNumber(string readPickNumber)
         {
-            //if ("i10f48".Equals(readPickNumber))
-            //{
-            //    return "1 of 48";
-            //}
-
             return readPickNumber;
         }
 
-        public class CardNameLocation
+        public override string PickNumberStartsWith()
         {
-            public CardNameLocation(int row, int column, RECT rect)
-            {
-                Row = row;
-                Column = column;
-                Rect = rect;
-            }
+            return "Card";
+        }
 
-            public int Row { get; set; }
-            public int Column { get; set; }
-            public RECT Rect { get; set; }
-
-            public override bool Equals(object obj)
-            {
-                var location = obj as CardNameLocation;
-                return location != null &&
-                       Row == location.Row &&
-                       Column == location.Column;
-            }
-
-            public override int GetHashCode()
-            {
-                var hashCode = 240067226;
-                hashCode = hashCode * -1521134295 + Row.GetHashCode();
-                hashCode = hashCode * -1521134295 + Column.GetHashCode();
-                return hashCode;
-            }
-
-            public override string ToString()
-            {
-                return $"{Row}x{Column}";
-            }
-
-            public static CardNameLocation FromString(string str)
-            {
-                string[] strs = str.Split('x');
-
-                int row = Convert.ToInt32(strs[0]);
-                int column = Convert.ToInt32(strs[1]);
-
-                return new CardNameLocation(row, column, GetRectForCard(row, column));
-            }
+        public override bool IsForge()
+        {
+            return false;
         }
     }
 }

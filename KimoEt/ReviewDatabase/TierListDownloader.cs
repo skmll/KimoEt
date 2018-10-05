@@ -57,6 +57,7 @@ namespace KimoEt.ReviewDatabase
 
         public async static void DownloadTDCs()
         {
+            Directory.CreateDirectory("tierlists");
             int timeout = 5000;
             var task = SyncDownloadTDCs();
             if (await Task.WhenAny(task, Task.Delay(timeout)) != task)
@@ -72,6 +73,7 @@ namespace KimoEt.ReviewDatabase
 
         public async static void DownloadSunyveils()
         {
+            Directory.CreateDirectory("tierlists");
             int timeout = 5000;
             var task = SyncDownloadSunyveils();
             if (await Task.WhenAny(task, Task.Delay(timeout)) != task)
@@ -119,6 +121,7 @@ namespace KimoEt.ReviewDatabase
                     string line;
                     while ((line = reader.ReadLine()) != null)
                     {
+                        line = line.Replace("’", "'");
                         if (i == 0 || line.Equals("\""))
                         {
                             tdcCsvCorrected += line;

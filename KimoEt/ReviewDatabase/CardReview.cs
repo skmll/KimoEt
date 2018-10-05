@@ -117,7 +117,7 @@ namespace KimoEt.ReviewDatabase
         public bool Splashable { get; set; }
         public bool Conditional { get; set; }
 
-        private Dictionary<string, float> ratingsForColorByStringRating = new Dictionary<string, float>()
+        public static Dictionary<string, float> ratingsForColorByStringRating = new Dictionary<string, float>()
         {
             {"S", 5.0f},
             //{"A+", 4.8f},
@@ -136,7 +136,7 @@ namespace KimoEt.ReviewDatabase
             {"F", 0.0f}
         };
 
-        private Dictionary<string, string> commentsByRating = new Dictionary<string, string>()
+        public static Dictionary<string, string> commentsByRating = new Dictionary<string, string>()
         {
             {"S", "\"Take this card, and think about moving in to this faction even if you're not in it yet\""},
             {"A", "\"Take this card unless you are far away from playing this faction\""},
@@ -146,6 +146,24 @@ namespace KimoEt.ReviewDatabase
             {"E", "\"I hope you don't have to play any of these\""},
             {"F", "\"I hope you don't have to play any of these\""}
         };
+        
+        public static string AverageRatingStringFromFloat(float ratingFloat)
+        {
+            float leastDiff = float.MaxValue;
+            string closestRating = "A";
+
+            foreach (var key in ratingsForColorByStringRating.Keys)
+            {
+                float diff = Math.Abs(ratingsForColorByStringRating[key] - ratingFloat);
+                if (diff <= leastDiff)
+                {
+                    leastDiff = diff;
+                    closestRating = key;
+                }
+            }
+
+            return closestRating;
+        }
 
         public override float AverageRatingForColor()
         {

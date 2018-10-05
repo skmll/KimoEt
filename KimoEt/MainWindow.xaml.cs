@@ -43,6 +43,7 @@ namespace KimoEt
 
         public static double ScaleFactorX;
         public static double ScaleFactorY;
+        public Screen currentScreen = DraftScreen.Instance;
 
         HotKey hotKey;
 
@@ -62,7 +63,6 @@ namespace KimoEt
             }
 
             hotKey = new HotKey(Key.F, KeyModifier.Ctrl, OnSearchShortcut);
-            SearchTextBox.Background = backgroundBrush;
             KimoEtTitle.Text = "KimoEt - v" + VERSION_STRING;
             FontFamily = new FontFamily("Segoe UI");
 
@@ -202,14 +202,6 @@ namespace KimoEt
             double realTop = top + translatedY;
             double realLeft = left + translatedX;
 
-            StackPanel searchedCommentsPanel = this.FindName("ManualSearchControl") as StackPanel;
-            if (element == searchedCommentsPanel)
-            {
-                // we don't care about this position
-                return;
-            }
-
-
             if (element == CanvasBorder)
             {
                 Settings.Instance.SetNewMenuPosition(new Point(realLeft, realTop));
@@ -260,7 +252,14 @@ namespace KimoEt
 
         private void SetupCardReviews()
         {
-            foreach (var location in DraftScreen.GetAllCardNameLocations())
+            //here we want to make sure we unmake them all, so use the draft screen
+            //the locations will just be used for row x column, so its fine
+            foreach (var location in DraftScreen.Instance.GetAllCardNameLocations())
+            {
+                UnmakeCardReviewLabel(location);
+            }
+
+            foreach (var location in currentScreen.GetAllCardNameLocations())
             {
                 MakeCardReviewLabel(location);
             }
@@ -271,7 +270,9 @@ namespace KimoEt
         {
             if (isPaused) return;
 
-            foreach (var location in DraftScreen.GetAllCardNameLocations())
+            SetupCardReviews();
+
+            foreach (var location in currentScreen.GetAllCardNameLocations())
             {
                 var myTextBox = (Button)this.FindName(GetBestGuessLabelName(location));
                 myTextBox.Visibility = Visibility.Hidden;
@@ -297,27 +298,31 @@ namespace KimoEt
             latestStoryboardRefreshButton = storyboard;
             storyboard.Begin(this, true);
 
-            foreach (var location in DraftScreen.GetCardNameLocationsAvailable(draftPickNumber))
+            foreach (var location in currentScreen.GetCardNameLocationsAvailable(draftPickNumber))
             {
-
-                Task.Run(RecognizeForLocation(location));
+                Task.Run(RecognizeForLocation(location, currentScreen, draftPickNumber));
             }
         }
 
-        private Action RecognizeForLocation(CardNameLocation location)
+        private Action RecognizeForLocation(CardNameLocation location, Screen recognizingScreen, int recognizingPickNumber)
         {
             return () =>
             {
                 var cardGuesses = CardRecognitionManager.Instance.ReadCardName(location);
 
-                if (cardGuesses == null || cardGuesses.Count == 0)
+                if ((cardGuesses == null || cardGuesses.Count == 0)
+                && currentScreen == recognizingScreen
+                && recognizingPickNumber == draftPickNumber
+                && !isPaused
+                && currentScreen != ForgeScreen.Instance)
                 {
+
                    //we failed the recognition, set a new task for this location for later:
                    Console.WriteLine(Utils.GetSecondsSinceEpoch() + " - we failed the recognition, set a new task for this location for later");
                     Task.Delay(1000).ContinueWith((obj) =>
                     {
                         Console.WriteLine(Utils.GetSecondsSinceEpoch() + " - starting now!");
-                        Task.Run(RecognizeForLocation(location));
+                        Task.Run(RecognizeForLocation(location, recognizingScreen, recognizingPickNumber));
                     });
 
                 }
@@ -327,7 +332,17 @@ namespace KimoEt
 
         private void SetupPickNumber()
         {
-            RECT pickRect = DraftScreen.GetRectForPickNumber();
+            Screen checkingCurrentScreen;
+            if (currentScreen == null)
+            {
+                checkingCurrentScreen = DraftScreen.Instance;
+            }
+            else
+            {
+                checkingCurrentScreen = currentScreen;
+            }
+
+            RECT pickRect = checkingCurrentScreen.GetRectForPickNumber();
 
             TextBox txtNumber = FindName("DraftPickNumber") as TextBox;
             if (txtNumber == null)
@@ -355,22 +370,34 @@ namespace KimoEt
                 while (!isPaused)
                 {
                     bool isWindowNormal = ProcessWindowManager.Instance.IsWindowStateNormal();
+
                     if (isWindowNormal && TierListDownloader.isTDCsReady)
                     {
-                        var pickNumber = CardRecognitionManager.Instance.ReadPickNumber(ProcessWindowManager.Instance.GetWindowAreaBitmap(DraftScreen.GetRectForPickNumber(isDoubleDigitsPickNumber), false));
-                        if (pickNumber == null || !pickNumber.StartsWith("Card"))
+                        checkingCurrentScreen = DraftScreen.Instance;
+                        var pickNumber = GetCurrentPickNumber(checkingCurrentScreen);
+
+                        if (pickNumber == null || !pickNumber.StartsWith(checkingCurrentScreen.PickNumberStartsWith()))
                         {
-                            isDoubleDigitsPickNumber = !isDoubleDigitsPickNumber;
-                            pickNumber = CardRecognitionManager.Instance.ReadPickNumber(ProcessWindowManager.Instance.GetWindowAreaBitmap(DraftScreen.GetRectForPickNumber(isDoubleDigitsPickNumber), false));
+                            checkingCurrentScreen = ForgeScreen.Instance;
+                            pickNumber = GetCurrentPickNumber(checkingCurrentScreen);
                         }
 
-                        if (pickNumber == null) continue;
+                        if (pickNumber == null || !pickNumber.StartsWith(checkingCurrentScreen.PickNumberStartsWith()))
+                        {
+                            SyncHideMainCanvas(true);
+                            continue;
+                        }
+
+                        SyncHideMainCanvas(false);
+
+                        bool changedScreens = currentScreen != checkingCurrentScreen;
+                        currentScreen = checkingCurrentScreen;
 
                         try
                         {
                             Application.Current.Dispatcher.BeginInvoke(
                             DispatcherPriority.Normal,
-                            (Action)(() => OnNewPickNumber(pickNumber, txtNumber)));
+                            (Action)(() => OnNewPickNumber(pickNumber, txtNumber, changedScreens)));
 
                         } catch (Exception) { /*do nothing*/}
                     }
@@ -380,11 +407,47 @@ namespace KimoEt
             });
         }
 
-        private void OnNewPickNumber(string newPickNumber, TextBox txtNumber)
+        ManualResetEvent syncOperation;
+        private void SyncHideMainCanvas(bool hide)
+        {
+            syncOperation = new ManualResetEvent(false);
+
+            try
+            {
+                Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
+                    (Action)(() => HideMainCanvasOnUiThread(hide))
+                );
+
+            }
+            catch (Exception) { /*do nothing*/}
+            
+            syncOperation.WaitOne();
+        }
+
+        private void HideMainCanvasOnUiThread(bool hide)
+        {
+            MainCanvas.Visibility = hide ? Visibility.Hidden : Visibility.Visible;
+            syncOperation.Set();
+        }
+
+        private string GetCurrentPickNumber(Screen checkingCurrentScreen)
+        {
+            var pickNumber = CardRecognitionManager.Instance.ReadPickNumber(ProcessWindowManager.Instance.GetWindowAreaBitmap(checkingCurrentScreen.GetRectForPickNumber(isDoubleDigitsPickNumber), false));
+            if (pickNumber == null || !pickNumber.StartsWith(checkingCurrentScreen.PickNumberStartsWith()))
+            {
+                isDoubleDigitsPickNumber = !isDoubleDigitsPickNumber;
+                pickNumber = CardRecognitionManager.Instance.ReadPickNumber(ProcessWindowManager.Instance.GetWindowAreaBitmap(checkingCurrentScreen.GetRectForPickNumber(isDoubleDigitsPickNumber), false));
+            }
+
+            return pickNumber;
+        }
+
+
+        private void OnNewPickNumber(string newPickNumber, TextBox txtNumber, bool changedScreens)
         {
             var textRead = newPickNumber;
-            newPickNumber = newPickNumber.Replace("Card", "").Trim();
-            newPickNumber = DraftScreen.GetExceptionPickNumber(newPickNumber);
+            newPickNumber = newPickNumber.Replace(currentScreen.PickNumberStartsWith(), "").Trim();
+            newPickNumber = currentScreen.GetExceptionPickNumber(newPickNumber);
 
             if (string.IsNullOrWhiteSpace(newPickNumber))
                 return;
@@ -400,7 +463,7 @@ namespace KimoEt
 
             var newDraftPickNumber = Convert.ToInt32(newPickNumber);
 
-            if (newDraftPickNumber != draftPickNumber)
+            if (newDraftPickNumber != draftPickNumber || changedScreens)
             {
                 draftPickNumber = newDraftPickNumber;
 
@@ -408,6 +471,18 @@ namespace KimoEt
 
                 GetAllCardReviews();
             }
+        }
+
+        private void UnmakeCardReviewLabel(CardNameLocation location)
+        {
+            var btn = this.FindName(GetBestGuessLabelName(location)) as Button;
+            if (btn == null)
+            {
+                return;
+            }
+            btn.PreviewMouseDown -= OnMainLabelClick;
+            MainCanvas.UnregisterName(btn.Name);
+            MainCanvas.Children.Remove(btn);
         }
 
         private void MakeCardReviewLabel(CardNameLocation location)
@@ -443,7 +518,7 @@ namespace KimoEt
                 DispatcherPriority.Normal,
                 (Action)(() => InternalUpdateCardReview(location, cardGuesses)));
             }
-            catch { /*do nothing*/}
+            catch (Exception) { /*do nothing*/}
         }
 
         private void InternalUpdateCardReview(CardNameLocation location, HashSet<CardGuess> cardGuesses)
@@ -451,7 +526,8 @@ namespace KimoEt
             currentCardGuessesByLocation[location] = cardGuesses;
 
             var name = GetBestGuessLabelName(location);
-            var myTextBox = (Button)this.FindName(name);
+            var myTextBox = this.FindName(name) as Button;
+            if (myTextBox == null) return;
             myTextBox.Visibility = Visibility.Visible;
 
             if (cardGuesses != null)
@@ -466,12 +542,12 @@ namespace KimoEt
                 myTextBox.Background = backgroundBrush;
                 myTextBox.Foreground = new SolidColorBrush(Colors.Red);
 
-                myTextBox.Content = "FAILED RECOGNITION";
+                myTextBox.Content = (currentScreen.IsForge() ? "N/A or " : "") + "FAILED RECOGNITION";
             }
 
             Utils.UpdateFontSizeToFit(myTextBox);
 
-            if (DraftScreen.GetCardNameLocationsAvailable(draftPickNumber).Last().Equals(location))
+            if (currentScreen.GetCardNameLocationsAvailable(draftPickNumber).Last().Equals(location))
             {
                 latestStoryboardRefreshButton.Stop(this);
             }
@@ -563,7 +639,6 @@ namespace KimoEt
                 ProcessWindowManager.Instance.Init("Eternal");
 
                 SetupPickNumber();
-                SetupCardReviews();
             }
 
             MainCanvas.Visibility = isPaused ? Visibility.Hidden : Visibility.Visible;
@@ -634,7 +709,7 @@ namespace KimoEt
             {
                 if (eventArgs.Key == Key.Return)
                 {
-                    SearchCardByName();
+                    SearchCardByName(SearchTextBox.Text, true);
                     ChangeSearchBarVisibilityAndFocus();
                     eventArgs.Handled = true;
                 }
@@ -646,19 +721,41 @@ namespace KimoEt
             };
         }
 
-        private void SearchCardByName()
+        private void SearchTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            string searchedCardName = SearchTextBox.Text;
-            ReviewDataSource.Instance.cardReviewsByNameByTeam.TryGetValue(new CardName(searchedCardName), out Dictionary<Team, CardReview> reviewFromTextWritten);
-            if (reviewFromTextWritten == null)
-                return;
+            SearchCardByName(SearchTextBox.Text, false);
+        }
 
-            var newGuess = new CardGuess
+        private void SearchCardByName(string searchedCardName, bool showBestCard)
+        {
+            if (string.IsNullOrEmpty(searchedCardName))
             {
-                ReviewByTeam = reviewFromTextWritten,
-                Certainty = CardGuess.UNCLEAR_CERTAINTY
-            };
+                SearchResults.Children.RemoveRange(0, SearchResults.Children.Count);
+                return;
+            }
 
+            var bestMatches = RecognitionUtils.FindBestCardReviewMatches(searchedCardName);
+
+            if (bestMatches.Count > 1 || !showBestCard)
+            {
+                SearchResults.Children.RemoveRange(0, SearchResults.Children.Count);
+                foreach (var match in bestMatches)
+                {
+                    TextBlock searchResult = new TextBlock
+                    {
+                        Text = match.ReviewByTeam[Team.TDC].Name,
+                        Foreground = Brushes.White,
+                    };
+                    searchResult.PreviewMouseDown += (e, args) =>
+                    {
+                        SearchCardByName(searchResult.Text, true);
+                    };
+                    SearchResults.Children.Add(searchResult);
+                }
+                return;
+            }
+
+            var newGuess = bestMatches.Last();
 
             StackPanel searchedCommentsPanel = this.FindName("ManualSearchControl") as StackPanel;
             if (searchedCommentsPanel == null)
@@ -672,7 +769,7 @@ namespace KimoEt
                 };
 
                 Canvas.SetLeft(searchedCommentsPanel, 1275);
-                Canvas.SetTop(searchedCommentsPanel, 300);
+                Canvas.SetTop(searchedCommentsPanel, 420);
                 MainCanvas.Children.Add(searchedCommentsPanel);
                 MainCanvas.RegisterName(searchedCommentsPanel.Name, searchedCommentsPanel);
                 
@@ -704,7 +801,7 @@ namespace KimoEt
                     Padding = new Thickness(5,5,5,5),
                     Width = 175,
                 };
-                Utils.MakePanelDraggable(searchedCommentsPanel, HolderCanvas, this, this);
+                Utils.MakePanelDraggable(searchedCommentsPanel, HolderCanvas, this, null);
                 Utils.UpdateFontSizeToFit(cardTitle);
                 titleCommentsPanel.Children.Add(cardTitle);
                 searchedCommentsPanel.RegisterName(cardTitle.Name, cardTitle);

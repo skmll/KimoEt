@@ -55,6 +55,56 @@ namespace KimoEt.ReviewDatabase
         private ReviewDataSource()
         {
             LoadCardReviews();
+            foreach (var key in cardReviewsByNameByTeam.Keys)
+            {
+                bool tdcHas = cardReviewsByNameByTeam[key].ContainsKey(Team.TDC);
+                bool sunyveilHas = cardReviewsByNameByTeam[key].ContainsKey(Team.SUNYVEIL);
+                if (tdcHas != sunyveilHas)
+                {
+                    if (!tdcHas)
+                    {
+                        var review = new TdcCardReview()
+                        {
+                            Name = key.name,
+                            Pack = "0",
+                            AverageRating = cardReviewsByNameByTeam[key][Team.SUNYVEIL].AverageRatingForColor().ToString("0.0"),
+                        };
+
+                        review.RatingsByReviewer.Add("Flash", "");
+                        review.RatingsByReviewer.Add("Drifter", "");
+                        review.RatingsByReviewer.Add("Mgallop", "");
+                        review.RatingsByReviewer.Add("Isomorphic", "");
+                        review.CommentsByReviewer.Add("Flash", "");
+                        review.CommentsByReviewer.Add("Drifter", "");
+                        review.CommentsByReviewer.Add("Mgallop", "");
+                        review.CommentsByReviewer.Add("Isomorphic", "");
+
+                        cardReviewsByNameByTeam[key][Team.TDC] = review;
+                    }
+                    else
+                    {
+                        var review = new SunyveilCardReview()
+                        {
+                            Name = key.name,
+                            AverageRating = SunyveilCardReview.AverageRatingStringFromFloat(cardReviewsByNameByTeam[key][Team.TDC].AverageRatingForColor()),
+                            Splashable = false,
+                            Conditional = false,
+                        };
+
+                        cardReviewsByNameByTeam[key][Team.SUNYVEIL] = review;
+                    }
+                }
+            }
+
+            foreach (var key in cardReviewsByNameByTeam.Keys)
+            {
+                bool tdcHas = cardReviewsByNameByTeam[key].ContainsKey(Team.TDC);
+                bool sunyveilHas = cardReviewsByNameByTeam[key].ContainsKey(Team.SUNYVEIL);
+                if (tdcHas != sunyveilHas)
+                {
+                    Console.WriteLine($"Found key \"{key.name}\" on TDC " + tdcHas + " on Sunyveil " + sunyveilHas);
+                }
+            }
         }
 
         public static ReviewDataSource Instance

@@ -66,13 +66,15 @@
                                 <ComboBoxItem Content="Default"/>
                                 <ComboBoxItem Content="User"/>
                             </ComboBox>
-                            <TextBlock Text="Tier list to use" FontSize="10" FontFamily="Verdana" Foreground="White" Width="148" Canvas.Left="10" Canvas.Top="45" Height="13" />
+                            <TextBlock Text="Tier list" FontSize="10" FontFamily="Verdana" Foreground="White" Width="148" Canvas.Left="10" Canvas.Top="45" Height="13" />
                             <ComboBox Name="ComboboxTierlistMode" Canvas.Top="60" Width="120" Height="20" Canvas.Left="10" SelectionChanged="OnTierlistModeChanged" SelectedValuePath="Content" >
                                 <ComboBoxItem Content="TDC's"/>
                                 <ComboBoxItem Content="Sunyveil's"/>
                                 <ComboBoxItem Content="Both"/>
                             </ComboBox>
-                            <Button Content=">>" BorderThickness="0" Background="Transparent" FontSize="10" FontFamily="Verdana" Foreground="White" Width="25" Canvas.Left="135" Canvas.Top="23" Height="13" Click="OnShowChooseColorsClick" />
+                            <Button BorderThickness="0" Background="Transparent" FontSize="10" FontFamily="Verdana" Foreground="White" Width="20" Canvas.Left="135" Canvas.Top="20" Height="20" Click="OnShowChooseColorsClick">
+                                <Image Source="Images/launch_icon_white.png"/>
+                            </Button>
 
                             <StackPanel Name="UserColorsPanel" Height="109" Width="128" Canvas.Top="9" Background="Gray" Canvas.Left="171" Visibility="Hidden">
                                 <StackPanel Orientation="Horizontal" Margin="2,2,10,0">
@@ -103,7 +105,10 @@
                                 </StackPanel>
                             </StackPanel>
                         </Canvas>
-                        <TextBox Name="SearchTextBox" Width="168" Visibility="Hidden" Background="Black" Foreground="White"></TextBox>
+                        <TextBox Name="SearchTextBox" Width="168" Visibility="Collapsed" Background="Gray" Foreground="White" TextChanged="SearchTextBox_TextChanged"></TextBox>
+                        <ScrollViewer Background="Gray" MaxHeight="120" VerticalScrollBarVisibility="Hidden">
+                            <StackPanel Name="SearchResults" Orientation="Vertical"/>
+                        </ScrollViewer>
                     </StackPanel>
                 </Canvas>
             </Border>
