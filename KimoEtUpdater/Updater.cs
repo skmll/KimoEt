@@ -15,19 +15,18 @@ namespace KimoEtUpdater
 {
     public class Updater
     {
-        public static readonly decimal VERSION = 1.1m;
         static ManualResetEvent finishedEvent = new ManualResetEvent(false);
 
         static void Main(string[] args)
         {
-            Console.WriteLine("current verison= " + VERSION);
-            Console.WriteLine("new version= " + args[0]);
+            Console.WriteLine("current verison= " + args[0]);
+            Console.WriteLine("new version= " + args[1]);
 
-            string fileDownloadUrl = args[1];
+            string fileDownloadUrl = args[2];
 
             Console.WriteLine("url= " + fileDownloadUrl);
 
-            string fileName = string.Format(@"KimoEt_v{0}NEW.zip", args[0]);
+            string fileName = string.Format(@"KimoEt_v{0}NEW.zip", args[1]);
             var parent = new FileInfo(Environment.CurrentDirectory).Directory;
             string fullPath = parent.FullName + "\\" + fileName;
 
@@ -66,13 +65,24 @@ namespace KimoEtUpdater
                     Directory.CreateDirectory(Path.GetDirectoryName(completeFileName));
                     continue;
                 }
-                file.ExtractToFile(completeFileName, true);
+                try
+                {
+                    file.ExtractToFile(completeFileName, true);
+                }
+                catch (IOException)
+                {
+                    continue;
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    continue;
+                }
             }
 
             archive.Dispose();
         }
 
-        async public static void Update(int mainProcessId)
+        async public static void Update(decimal version, int mainProcessId)
         {
             //check new releases
             var client = new GitHubClient(new ProductHeaderValue("kimoEt"));
@@ -94,20 +104,20 @@ namespace KimoEtUpdater
 
             string downloadUrl = GetDownloadUrl(latest);
 
-            if (latestVersion <= VERSION)
+            if (latestVersion <= version)
             {
-                Console.WriteLine("No new version found: local= " + VERSION + " remote= " + latestVersion);
+                Console.WriteLine("No new version found: local= " + version + " remote= " + latestVersion);
                 return;
             }
 
-            Console.WriteLine("Found new version: local= " + VERSION + " remote= " + latestVersion);
+            Console.WriteLine("Found new version: local= " + version + " remote= " + latestVersion);
             await CheckForUpdatesToUpdater(latest);
 
             //start Updater process
             Console.WriteLine("Starting updater");
             Process myapp = new Process();
             myapp.StartInfo.FileName = Environment.CurrentDirectory + "\\KimoEtUpdater.exe";
-            myapp.StartInfo.Arguments = versionString + " " + downloadUrl;
+            myapp.StartInfo.Arguments = version.ToString(CultureInfo.InvariantCulture) + " " + versionString + " " + downloadUrl;
             myapp.Start();
 
             Console.WriteLine("Stopping KimoEt.exe");

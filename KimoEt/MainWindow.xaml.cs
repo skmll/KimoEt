@@ -39,7 +39,8 @@ namespace KimoEt
         private bool isWindowSetup = false;
         private Dictionary<CardNameLocation, HashSet<CardGuess>> currentCardGuessesByLocation = new Dictionary<CardNameLocation, HashSet<CardGuess>>();
         public static SolidColorBrush backgroundBrush = new SolidColorBrush(Utils.ConvertStringToColor("#1E1E1E")) { Opacity = 0.7f };
-        public static string VERSION_STRING = Updater.VERSION.ToString(CultureInfo.InvariantCulture);
+        public static readonly decimal VERSION = 1.2m;
+        public static string VERSION_STRING = VERSION.ToString(CultureInfo.InvariantCulture);
 
         public static double ScaleFactorX;
         public static double ScaleFactorY;
@@ -56,10 +57,10 @@ namespace KimoEt
             TierListDownloader.DownloadTDCs();
             TierListDownloader.DownloadSunyveils();
 
-            if (Settings.Instance.LastVersionUsed < Updater.VERSION)
+            if (Settings.Instance.LastVersionUsed < VERSION)
             {
                 DialogWindowManager.ShowInitialWarning(HolderCanvas);
-                Settings.Instance.SetNewLastVersionUsed(Updater.VERSION);
+                Settings.Instance.SetNewLastVersionUsed(VERSION);
             }
 
             hotKey = new HotKey(Key.F, KeyModifier.Ctrl, OnSearchShortcut);
@@ -86,7 +87,7 @@ namespace KimoEt
         {
             Task.Run(() =>
             {
-                Updater.Update(Process.GetCurrentProcess().Id);
+                Updater.Update(VERSION, Process.GetCurrentProcess().Id);
             });
         }
 
