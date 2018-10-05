@@ -14,17 +14,17 @@ To use it, download latest version from releases tab:
 https://github.com/skmll/KimoEt/releases
 
 Or use this link: (might not be updated for future releases)
-https://github.com/skmll/KimoEt/releases/download/v1.0/KimoEt_v1.0.zip
+https://github.com/skmll/KimoEt/releases/download/v1.1/KimoEt_v1.1.zip
 
 After that, uncompress it, and open KimoEt folder. Then just double click on KimoEt.exe to star the program.
 It should be pretty easy after that. Go into a draft, and click the "play" button. You should see something like this:
-![alt text](https://i.imgur.com/5nAm9FA.jpg)
+![alt text](https://i.imgur.com/f4f1E6W.jpg)
 
 **FEATURES:**
 - See the ratings (0-5) for each card in the current draft screen
 - Colors for each rating range (Default goes from red to yellow to green, to a cyanish to white color for 4+ rated cards)
 - Click on the name of a card, to see individual ratings and comments the reviewers might have added
-- If some card is wrong (it might happen on rare ocasions), there is a search icon next to the name, you can use it to search for the correct card by its name (case insensitve but other than that it has to match exactly)
+- You can search any card by its name by hitting CTRL+F, you can use it to search for the correct card by its name (case insensitve but other than that it has to match exactly)
 - Three modes of ratings' colors (User, Default, NONE)
 - Change the colors for each rating range (User MODE)
 - Refresh
@@ -33,13 +33,15 @@ It should be pretty easy after that. Go into a draft, and click the "play" butto
 - Auto moves the overlay window when Eternal window moves
 - Auto brings Eternal window to front when hitting the "play" button
 - All app windows are draggable, so you can move them around
+- Forge support
+- Auto updates to new release versions
+- Sunyveils Tier list as an option
 
 **KNOWN LIMITATIONS:**
 - Only works for Windows
 - Only works in 1920x1080 resolution (Eternal game setting)
 - Only works in Windowed Mode (Eternal game setting)
 - Sometimes the auto hiding when Eternal is not in the foreground, might not work
-- Does not work if you have a custom scale set in the windows' display settings
 
 **DISCLAIMER:**
 
