@@ -3,14 +3,10 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using KimoEt.EternalSpecifics;
 using KimoEt.ProcessWindow;
-using KimoEt.ReviewDatabase;
 using KimoEt.Utililties;
 using Tesseract;
-using static KimoEt.EternalSpecifics.DraftScreen;
 
 namespace KimoEt.VisualRecognition.Cards
 {

@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Drawing;
 using System.IO;
 using Tesseract;
 using KimoEt.VisualRecognition.Cards;
-using static KimoEt.EternalSpecifics.DraftScreen;
-using KimoEt.ReviewDatabase;
 using KimoEt.Utililties;
 using KimoEt.EternalSpecifics;
 
