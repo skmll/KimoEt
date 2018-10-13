@@ -160,7 +160,7 @@ namespace KimoEt.ReviewDatabase
                     }
                 }
 
-                System.IO.File.WriteAllText(Environment.CurrentDirectory + "\\tierLists\\TDC.csv", tdcCsvCorrected);
+                File.WriteAllText(Environment.CurrentDirectory + "\\tierLists\\TDC.csv", tdcCsvCorrected);
             });
         }
 
@@ -236,7 +236,7 @@ namespace KimoEt.ReviewDatabase
                     }
                 }
 
-                System.IO.File.WriteAllText(Environment.CurrentDirectory + "\\tierLists\\Sunyveil.csv", tdcCsvCorrected);
+                File.WriteAllText(Environment.CurrentDirectory + "\\tierLists\\Sunyveil.csv", tdcCsvCorrected);
             });
         }
     }

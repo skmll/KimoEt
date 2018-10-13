@@ -113,7 +113,7 @@ namespace KimoEt.Utililties
         protected virtual void Dispose(bool disposing)
         {
             // Check to see if Dispose has already been called.
-            if (!this._disposed)
+            if (!_disposed)
             {
                 // If disposing equals true, dispose all managed
                 // and unmanaged resources.

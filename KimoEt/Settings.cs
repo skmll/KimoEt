@@ -41,7 +41,7 @@ namespace KimoEt
         public static void SaveSettingsToDisk()
         {
             // Write the contents of the variable settings to a file.
-            WriteToJsonFile<Settings>(@"settings.json", Settings.Instance);
+            WriteToJsonFile<Settings>(@"settings.json", Instance);
         }
 
         public static void LoadSettingsFromDisk()

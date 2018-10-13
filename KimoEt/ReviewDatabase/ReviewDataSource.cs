@@ -41,7 +41,7 @@ namespace KimoEt.ReviewDatabase
             {
                 var cardName = obj as CardName;
                 return cardName != null &&
-                       this.name.ToLower() == cardName.name.ToLower();
+                       name.ToLower() == cardName.name.ToLower();
             }
 
             public override int GetHashCode()
