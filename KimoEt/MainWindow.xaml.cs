@@ -23,8 +23,6 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
-using static KimoEt.EternalSpecifics.DraftScreen;
-using static KimoEt.ReviewDatabase.ReviewDataSource;
 
 namespace KimoEt
 {
@@ -75,7 +73,7 @@ namespace KimoEt
             ComboboxTierlistMode.SelectedIndex = Settings.Instance.TierListMode;
             CheckForUpdates();
 
-            this.Loaded += (s, e) =>
+            Loaded += (s, e) =>
             {
                 Matrix m = PresentationSource.FromVisual(this).CompositionTarget.TransformToDevice;
                 ScaleFactorX = m.M11;
@@ -275,7 +273,7 @@ namespace KimoEt
 
             foreach (var location in currentScreen.GetAllCardNameLocations())
             {
-                var myTextBox = (Button)this.FindName(GetBestGuessLabelName(location));
+                var myTextBox = (Button)FindName(GetBestGuessLabelName(location));
                 myTextBox.Visibility = Visibility.Hidden;
             }
 
@@ -476,7 +474,7 @@ namespace KimoEt
 
         private void UnmakeCardReviewLabel(CardNameLocation location)
         {
-            var btn = this.FindName(GetBestGuessLabelName(location)) as Button;
+            var btn = FindName(GetBestGuessLabelName(location)) as Button;
             if (btn == null)
             {
                 return;
@@ -527,7 +525,7 @@ namespace KimoEt
             currentCardGuessesByLocation[location] = cardGuesses;
 
             var name = GetBestGuessLabelName(location);
-            var myTextBox = this.FindName(name) as Button;
+            var myTextBox = FindName(name) as Button;
             if (myTextBox == null) return;
             myTextBox.Visibility = Visibility.Visible;
 
@@ -566,7 +564,7 @@ namespace KimoEt
 
             if (guesses == null) return;
 
-            ScrollViewer commentsScrollViewer = this.FindName("canvas" + location.ToString() + "comments") as ScrollViewer;
+            ScrollViewer commentsScrollViewer = FindName("canvas" + location.ToString() + "comments") as ScrollViewer;
             if (commentsScrollViewer == null)
             {
                 commentsScrollViewer = new ScrollViewer
@@ -758,7 +756,7 @@ namespace KimoEt
 
             var newGuess = bestMatches.Last();
 
-            StackPanel searchedCommentsPanel = this.FindName("ManualSearchControl") as StackPanel;
+            StackPanel searchedCommentsPanel = FindName("ManualSearchControl") as StackPanel;
             if (searchedCommentsPanel == null)
             {
                 searchedCommentsPanel = new StackPanel
@@ -846,8 +844,8 @@ namespace KimoEt
             else
             {
                 searchedCommentsPanel.Visibility = Visibility.Visible;
-                (this.FindName("textbox_ManualSearchControl") as TextBox).Text = CardReviewForUiUtils.GetCommentsText(newGuess);
-                (this.FindName("cardTitle_ManualSearchControl") as TextBox).Text = CardReviewForUiUtils.GetRatingLabel(new HashSet<CardGuess>() { newGuess });
+                (FindName("textbox_ManualSearchControl") as TextBox).Text = CardReviewForUiUtils.GetCommentsText(newGuess);
+                (FindName("cardTitle_ManualSearchControl") as TextBox).Text = CardReviewForUiUtils.GetRatingLabel(new HashSet<CardGuess>() { newGuess });
             }
         }
 
@@ -872,7 +870,7 @@ namespace KimoEt
 
         private void QuitButtonClick(object sender, RoutedEventArgs e)
         {
-            System.Windows.Application.Current.Shutdown();
+            Application.Current.Shutdown();
         }
 
         private static string GetBestGuessLabelName(CardNameLocation location)

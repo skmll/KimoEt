@@ -3,10 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
 
 namespace KimoEt
 {
@@ -45,7 +41,7 @@ namespace KimoEt
         public static void SaveSettingsToDisk()
         {
             // Write the contents of the variable settings to a file.
-            WriteToJsonFile<Settings>(@"settings.json", Settings.Instance);
+            WriteToJsonFile<Settings>(@"settings.json", Instance);
         }
 
         public static void LoadSettingsFromDisk()

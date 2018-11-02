@@ -1,10 +1,5 @@
 ﻿using KimoEt.ProcessWindow;
 using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -28,7 +23,7 @@ namespace KimoEt.UI
                 Orientation = Orientation.Vertical,
             };
 
-            System.Windows.Controls.Image image = new System.Windows.Controls.Image()
+            Image image = new Image()
             {
                 Source = new BitmapImage(new Uri("Images/warning_icon.png", UriKind.Relative)),
                 Width = 100,
@@ -66,7 +61,7 @@ namespace KimoEt.UI
                 canvas.Children.Remove(warningPanel);
             };
 
-            warningPanel.Measure(new System.Windows.Size(double.PositiveInfinity, double.PositiveInfinity));
+            warningPanel.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
             Canvas.SetLeft(warningPanel, 1920 / 2 - warningPanel.DesiredSize.Width / 2);
             Canvas.SetTop(warningPanel, 1080 / 2 - warningPanel.DesiredSize.Height / 2);
             canvas.Children.Add(warningPanel);
@@ -99,7 +94,7 @@ namespace KimoEt.UI
             };
             helpPanel.Children.Add(kimoEtInfoPanel);
 
-            System.Windows.Controls.Image image = new System.Windows.Controls.Image()
+            Image image = new Image()
             {
                 Source = new BitmapImage(new Uri("Images/KimoEt.png", UriKind.Relative)),
                 Width = 110,
@@ -181,7 +176,7 @@ namespace KimoEt.UI
                 canvas.Children.Remove(helpPanel);
             };
 
-            helpPanel.Measure(new System.Windows.Size(double.PositiveInfinity, double.PositiveInfinity));
+            helpPanel.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
             Canvas.SetLeft(helpPanel, 1920 / 2 - helpPanel.DesiredSize.Width / 2);
             Canvas.SetTop(helpPanel, 1080 / 2 - helpPanel.DesiredSize.Height / 2);
             canvas.Children.Add(helpPanel);

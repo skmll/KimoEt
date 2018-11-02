@@ -45,14 +45,14 @@ namespace KimoEt.Utililties
             //handle ARGB strings (8 characters long)
             if (hex.Length == 8)
             {
-                a = byte.Parse(hex.Substring(0, 2), System.Globalization.NumberStyles.HexNumber);
+                a = byte.Parse(hex.Substring(0, 2), NumberStyles.HexNumber);
                 start = 2;
             }
 
             //convert RGB characters to bytes
-            r = byte.Parse(hex.Substring(start, 2), System.Globalization.NumberStyles.HexNumber);
-            g = byte.Parse(hex.Substring(start + 2, 2), System.Globalization.NumberStyles.HexNumber);
-            b = byte.Parse(hex.Substring(start + 4, 2), System.Globalization.NumberStyles.HexNumber);
+            r = byte.Parse(hex.Substring(start, 2), NumberStyles.HexNumber);
+            g = byte.Parse(hex.Substring(start + 2, 2), NumberStyles.HexNumber);
+            b = byte.Parse(hex.Substring(start + 4, 2), NumberStyles.HexNumber);
 
             return System.Windows.Media.Color.FromArgb(a, r, g, b);
         }
@@ -60,13 +60,13 @@ namespace KimoEt.Utililties
         public static void UpdateFontSizeToFit(Button textBox)
         {
             double fontSize = textBox.FontSize;
-            FormattedText ft = new FormattedText(textBox.Content as string, CultureInfo.CurrentCulture, System.Windows.FlowDirection.LeftToRight,
+            FormattedText ft = new FormattedText(textBox.Content as string, CultureInfo.CurrentCulture, FlowDirection.LeftToRight,
                                              new Typeface(textBox.FontFamily, textBox.FontStyle, textBox.FontWeight, textBox.FontStretch),
                                              fontSize, textBox.Foreground);
             while (textBox.Width < (ft.Width + 10) && fontSize > 2)
             {
                 fontSize -= 1;
-                ft = new FormattedText(textBox.Content as string, CultureInfo.CurrentCulture, System.Windows.FlowDirection.LeftToRight,
+                ft = new FormattedText(textBox.Content as string, CultureInfo.CurrentCulture, FlowDirection.LeftToRight,
                                                           new Typeface(textBox.FontFamily, textBox.FontStyle, textBox.FontWeight, textBox.FontStretch),
                                                           fontSize, textBox.Foreground);
             }
@@ -77,13 +77,13 @@ namespace KimoEt.Utililties
         public static void UpdateFontSizeToFit(TextBox textBox)
         {
             double fontSize = textBox.FontSize;
-            FormattedText ft = new FormattedText(textBox.Text as string, CultureInfo.CurrentCulture, System.Windows.FlowDirection.LeftToRight,
+            FormattedText ft = new FormattedText(textBox.Text as string, CultureInfo.CurrentCulture, FlowDirection.LeftToRight,
                                              new Typeface(textBox.FontFamily, textBox.FontStyle, textBox.FontWeight, textBox.FontStretch),
                                              fontSize, textBox.Foreground);
             while (textBox.Width < (ft.Width + 10) && fontSize > 2)
             {
                 fontSize -= 1;
-                ft = new FormattedText(textBox.Text as string, CultureInfo.CurrentCulture, System.Windows.FlowDirection.LeftToRight,
+                ft = new FormattedText(textBox.Text as string, CultureInfo.CurrentCulture, FlowDirection.LeftToRight,
                                                           new Typeface(textBox.FontFamily, textBox.FontStyle, textBox.FontWeight, textBox.FontStretch),
                                                           fontSize, textBox.Foreground);
             }

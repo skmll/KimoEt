@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows;
@@ -56,7 +55,7 @@ namespace KimoEt.ProcessWindow
 
         public void BindLocationToThisWindow(MainWindow mainWindow)
         {
-            this.windowToBind = mainWindow;
+            windowToBind = mainWindow;
         }
 
         private void TargetMoved(IntPtr hWinEventHook, uint eventType, IntPtr lParam, int idObject, int idChild, uint dwEventThread, uint dwmsEventTime)

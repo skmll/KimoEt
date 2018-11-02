@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace KimoEt.ReviewDatabase
 {
@@ -43,7 +41,7 @@ namespace KimoEt.ReviewDatabase
             {
                 var cardName = obj as CardName;
                 return cardName != null &&
-                       this.name.ToLower() == cardName.name.ToLower();
+                       name.ToLower() == cardName.name.ToLower();
             }
 
             public override int GetHashCode()
