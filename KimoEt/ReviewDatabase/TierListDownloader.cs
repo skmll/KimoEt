@@ -178,7 +178,7 @@ namespace KimoEt.ReviewDatabase
                 4. Your link will look like:
                     https://docs.google.com/spreadsheets/d/KEY/export?format=csv&id=KEY&gid=0&output=csv
                 */
-                string url = @"https://docs.google.com/spreadsheets/d/1zYZSfRlD3ZSx1pW2mtE87FnjNTY9pkpMPz4Tz4PxJzk/export?format=csv&id=1zYZSfRlD3ZSx1pW2mtE87FnjNTY9pkpMPz4Tz4PxJzk&gid=0&output=csv";
+                string url = @"https://docs.google.com/spreadsheets/d/1HcCRoheKLtp3sJtjtR-kLRPMpxuL3nQZUfnnv1Yc8sY/export?format=csv&id=1HcCRoheKLtp3sJtjtR-kLRPMpxuL3nQZUfnnv1Yc8sY&gid=0&output=csv";
 
                 WebClientEx wc = new WebClientEx(new CookieContainer());
                 wc.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 6.2; WOW64; rv:22.0) Gecko/20100101 Firefox/22.0");
